@@ -6,14 +6,21 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import java.util.Scanner;
 
+/** Class Description of APIDetails
+ *
+ *
+ * @author Parker Mitchell
+ * @version 1.0
+ */
+
 public class APIDetails {
     private String songName;
     private String artistName;
     private String smallAlbumArtURL;
     private String bigAlbumArtURL;
 
-    public APIDetails() throws UnirestException {
-        String[] apiDetails = getAPIDetails();
+    public APIDetails(String userInput) throws UnirestException {
+        String[] apiDetails = getAPIDetails(userInput);
 
         this.songName = apiDetails[0];
         this.artistName = apiDetails[1];
@@ -22,7 +29,7 @@ public class APIDetails {
     }
 
     // MAKE SURE TO PASS IN USER INPUT STRING
-    private String[] getAPIDetails() throws UnirestException {
+    private String[] getAPIDetails(String userInput) throws UnirestException {
         String[] apiDetails = new String[4];
 
         HttpResponse<String> response = getHTTPResponse("slow dancing in the dark joji");
