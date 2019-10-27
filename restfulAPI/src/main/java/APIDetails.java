@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import com.google.gson.*;
 import com.mashape.unirest.http.HttpResponse;
@@ -13,19 +16,26 @@ import java.util.Scanner;
  * @version 1.0
  */
 
+
+/* Current Client Access Token: Fpdwsgm7gI_ma2g6KbXe6oLGpSTvU1VG2qWQaBMRXQ8HSeYVLSeWH9L4bqrvPGvI */
+
+
 public class APIDetails {
     private String songName;
     private String artistName;
     private String smallAlbumArtURL;
     private String bigAlbumArtURL;
+    private String songLyrics;
 
-    public APIDetails(String userInput) throws UnirestException {
+    public APIDetails(String userInput) throws Exception {
         String[] apiDetails = getAPIDetails(userInput);
 
         this.songName = apiDetails[0];
         this.artistName = apiDetails[1];
         this.smallAlbumArtURL = apiDetails[2];
         this.bigAlbumArtURL = apiDetails[3];
+        this.songLyrics = extractLyrics(this.songName, this.artistName,
+                "Fpdwsgm7gI_ma2g6KbXe6oLGpSTvU1VG2qWQaBMRXQ8HSeYVLSeWH9L4bqrvPGvI");
     }
 
     // MAKE SURE TO PASS IN USER INPUT STRING
@@ -60,6 +70,10 @@ public class APIDetails {
 
     public String getBigAlbumArtURL() {
         return this.bigAlbumArtURL;
+    }
+
+    public String getSongLyrics() {
+        return this.songLyrics;
     }
 
     private boolean checkAPIStatus(int statusCode) {
@@ -114,6 +128,25 @@ public class APIDetails {
 
     private String extractBigArtURL(JsonObject song) {
         return song.get("song_art_image_url").toString();
+    }
+
+    // NEED TO INCLUDE PYTHON SCRIPT IN PACKAGE OR SOMETHING
+    // THEN THEY NEED TO HAVE PYTHON3 ???
+    // TURN .PY INTO EXECUTABLE
+    private String extractLyrics(String songName, String artistName, String clientAccessToken) throws Exception {
+        Process process = Runtime.getRuntime().exec(new String[]{"python3",
+                "/Users/parkermitchell/Desktop/lyricsGeniusTest.py",
+                songName, artistName, clientAccessToken});
+
+        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+        String lyrics = null;
+        while ((lyrics = stdInput.readLine()) != null)
+        {
+            System.out.println(lyrics);
+        }
+
+        return lyrics;
     }
 
 }
