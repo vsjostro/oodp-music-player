@@ -20,6 +20,8 @@ public class MusicPlayerController {
         view.addRemoveListener(new RemoveSongListener());
         view.addPlaySongListener(new PlaySongListener());
         view.addStopSongListener(new StopSongListener());
+        view.addNextSongListener(new NextSongListener());
+        view.addPrevSongListener(new PrevSongListener());
 
     }
 
@@ -60,7 +62,7 @@ public class MusicPlayerController {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            view.playSong();
+            view.playButtonPressed();
         }
     }
 
@@ -72,5 +74,20 @@ public class MusicPlayerController {
         }
     }
 
+    class NextSongListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.nextSong();
+        }
+    }
+
+    class PrevSongListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.prevSong();
+        }
+    }
 
 }

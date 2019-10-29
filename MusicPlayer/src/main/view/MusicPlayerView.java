@@ -19,7 +19,8 @@ import java.util.ArrayList;
 
 public class MusicPlayerView extends JFrame {
 
-    private JLabel currentSong = new JLabel("Pick a song and press play");
+    private JLabel currentSongLabel = new JLabel("Pick a song and press play");
+    private JLabel currentPlaylistLabel = new JLabel("");
     private JLabel albumImage = new JLabel();
     private JLabel status = new JLabel("");
 
@@ -39,6 +40,8 @@ public class MusicPlayerView extends JFrame {
     private ArrayList<Song> songList = new ArrayList<>();
     private MediaPlayer mediaPlayer;
     private Boolean songPlaying = false;
+    private Song currentSong;
+    private Playlist currentPlaylist;
 
     //MusicPlayerModel not implemented ye t, might be changed in the future
 
@@ -50,12 +53,11 @@ public class MusicPlayerView extends JFrame {
         tableModel.addColumn("Artist");
 
         Playlist playlist = new Playlist("Playlist 1", "Initial playlist.", songList);
-
-        JLabel currentPlaylist = new JLabel("");
-        currentPlaylist.setText(playlist.getPlaylistName());
+        currentPlaylist = playlist;
+        currentPlaylistLabel.setText(currentPlaylist.getPlaylistName());
 
         try {
-            image = ImageIO.read(new File("MusicPlayer/src/resources/images/Album.png"));
+            image = ImageIO.read(new File("MusicPlayer/src/resources/images/defaultImage.png"));
             albumImage.setIcon(new ImageIcon(image));
         } catch (IOException e) {
             e.printStackTrace();
@@ -65,17 +67,17 @@ public class MusicPlayerView extends JFrame {
         Song song1 = new Song("epic", "Artist1", "MusicPlayer/src/resources/songs/epic.wav");
         Song song2 = new Song("groove", "Artist2", "MusicPlayer/src/resources/songs/groove.wav");
         Song song3 = new Song("bassline", "Artist3", "MusicPlayer/src/resources/songs/bassline.wav", "MusicPlayer/src/resources/images/guitar-bass-icon.png");
-        Song song4 = new Song("happy", "Artist4", "MusicPlayer/src/resources/songs/happy.wav", "MusicPlayer/src/resources/images/Album.png");
+        Song song4 = new Song("happy", "Artist4", "MusicPlayer/src/resources/songs/happy.wav", "MusicPlayer/src/resources/images/defaultImage.png");
 
         playlist.getSongs().add(song1);
         playlist.getSongs().add(song2);
         playlist.getSongs().add(song3);
         playlist.getSongs().add(song4);
 
-        tableModel.addRow(new Object[]{song1.getId(), song1.getName(), song1.getArtist()});
-        tableModel.addRow(new Object[]{song2.getId(), song2.getName(), song2.getArtist()});
-        tableModel.addRow(new Object[]{song3.getId(), song3.getName(), song3.getArtist()});
-        tableModel.addRow(new Object[]{song4.getId(), song4.getName(), song4.getArtist()});
+        tableModel.addRow(new Object[]{song1.getId() + 1, song1.getName(), song1.getArtist()});
+        tableModel.addRow(new Object[]{song2.getId() + 1, song2.getName(), song2.getArtist()});
+        tableModel.addRow(new Object[]{song3.getId() + 1, song3.getName(), song3.getArtist()});
+        tableModel.addRow(new Object[]{song4.getId() + 1, song4.getName(), song4.getArtist()});
 
         table.setBounds(30, 40, 200, 300);
 
@@ -85,14 +87,14 @@ public class MusicPlayerView extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
 
         JPanel panel = new JPanel();
-        panel.add(currentPlaylist);
+        panel.add(currentPlaylistLabel);
         panel.add(addButton);
         panel.add(removeButton);
-        panel.add(currentSong);
+        panel.add(currentSongLabel);
         panel.add(scrollPane);
         panel.add(playButton);
-        panel.add(nextButton);
         panel.add(prevButton);
+        panel.add(nextButton);
         panel.add(stopButton);
         panel.add(albumImage);
         panel.add(status);
@@ -131,10 +133,18 @@ public class MusicPlayerView extends JFrame {
         stopButton.addActionListener(actionListener);
     }
 
+    public void addNextSongListener(ActionListener actionListener) {
+        nextButton.addActionListener(actionListener);
+    }
+
+    public void addPrevSongListener(ActionListener actionListener) {
+        prevButton.addActionListener(actionListener);
+    }
+
     public void addSongToTable(String title, String artist, String songPath) {
         Song song = new Song(title, artist, songPath);
         songList.add(song);
-        tableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});
+        tableModel.addRow(new Object[]{song.getId() + 1, song.getName(), song.getArtist()});
     }
 
     public void removeSong() {
@@ -156,40 +166,49 @@ public class MusicPlayerView extends JFrame {
         }
     }
 
-
-    public void playSong() {
+    public void playButtonPressed() {
 
         try {
-            if (songPlaying) {
-                mediaPlayer.stop();
-            }
-
             int selectedRow = table.getSelectedRow();
-
             Song song = songList.get(selectedRow);
-            String songPath = song.getSongPath();
+            playSong(song);
 
-            if (song.getImagePath() != null) {
-                ImageIcon image = new ImageIcon(song.getImagePath());
-                Image img1 = image.getImage();
-                Image img2 = img1.getScaledInstance(128, 128, Image.SCALE_SMOOTH);
-                image = new ImageIcon(img2);
-                albumImage.setIcon(image);
-            }
-
-            currentSong.setText("Now playing: " + songList.get(selectedRow).getName() + " by " + songList.get(selectedRow).getArtist());
-
-            Media hit = new Media(new File(songPath).toURI().toString());
-            mediaPlayer = new MediaPlayer(hit);
-            mediaPlayer.play();
-            songPlaying = true;
-
-
-            status.setText("");
-        } catch (ArrayIndexOutOfBoundsException e) {
+        }catch (ArrayIndexOutOfBoundsException e) {
             status.setText("Select a song to play!");
         }
+    }
 
+    public void playSong(Song song) {
+
+
+        if (songPlaying) {
+            mediaPlayer.stop();
+        }
+
+        String songPath = song.getSongPath();
+        currentSong = song;
+        ImageIcon image;
+
+        if (song.getImagePath() != null) {
+            image = new ImageIcon(song.getImagePath());
+        }
+        //sets a default image if no image is set
+        else {
+            image = new ImageIcon("MusicPlayer/src/resources/images/defaultImage.png");
+        }
+        Image img1 = image.getImage();
+        Image img2 = img1.getScaledInstance(128, 128, Image.SCALE_SMOOTH);
+        image = new ImageIcon(img2);
+        albumImage.setIcon(image);
+
+
+        Media hit = new Media(new File(songPath).toURI().toString());
+        mediaPlayer = new MediaPlayer(hit);
+        mediaPlayer.play();
+
+        currentSongLabel.setText("Now playing: " + song.getName() + " by " + song.getArtist());
+        songPlaying = true;
+        status.setText("");
     }
 
     public void stopSong() {
@@ -197,6 +216,32 @@ public class MusicPlayerView extends JFrame {
         if (songPlaying) {
             mediaPlayer.stop();
         }
+    }
 
+    public void nextSong() {
+
+        try {
+            stopSong();
+            Song nextSong = currentPlaylist.getSongs().get(currentSong.getId() + 1);
+            playSong(nextSong);
+            table.setRowSelectionInterval(nextSong.getId(), nextSong.getId());
+        }
+        catch (IndexOutOfBoundsException e) {
+            status.setText("Last song in playlist");
+        }
+    }
+
+    public void prevSong() {
+
+        try {
+            stopSong();
+            Song prevSong = currentPlaylist.getSongs().get(currentSong.getId() - 1);
+            playSong(prevSong);
+            table.setRowSelectionInterval(prevSong.getId(), prevSong.getId());
+
+        }
+        catch (IndexOutOfBoundsException e) {
+            status.setText("First song in playlist");
+        }
     }
 }

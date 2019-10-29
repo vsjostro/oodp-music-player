@@ -8,7 +8,7 @@ public class Song {
     private String songPath;
     private String imagePath;
 
-    static int gid = 1;
+    static int gid = 0;
 
     public Song(String name, String artist, String songPath) {
         this.name = name;
