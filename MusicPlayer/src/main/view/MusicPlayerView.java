@@ -1,5 +1,8 @@
 package main.view;
 
+
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import main.model.MusicPlayerModel;
 import main.model.Playlist;
 import main.model.Song;
@@ -7,48 +10,37 @@ import main.model.Song;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.applet.Applet;
-import java.applet.AudioClip;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 public class MusicPlayerView extends JFrame {
 
+    private JLabel currentSong = new JLabel("Pick a song and press play");
+    private JLabel albumImage = new JLabel();
+    private JLabel status = new JLabel("");
 
-    //GUI stuff
-    JFrame frame = new JFrame("Music Player");
-    JPanel panel = new JPanel();
+    private DefaultTableModel tableModel = new DefaultTableModel();
+    private JTable table = new JTable(tableModel);
 
-    JLabel currentPlaylist = new JLabel("");
-    JLabel currentSong = new JLabel("Pick a song and press play");
-    JLabel albumImage = new JLabel();
-    JLabel status = new JLabel("");
-
-    DefaultTableModel tableModel = new DefaultTableModel();
-    JTable table = new JTable(tableModel);
-
-    JButton addButton = new JButton("Add song");
-    JButton removeButton = new JButton("Remove song");
-    JButton playButton = new JButton("Play");
-    JButton nextButton = new JButton("Next");
-    JButton prevButton = new JButton("Prev");
-    JButton stopButton = new JButton("Stop");
+    private JButton addButton = new JButton("Add song");
+    private JButton removeButton = new JButton("Remove song");
+    private JButton playButton = new JButton("Play");
+    private JButton nextButton = new JButton("Next");
+    private JButton prevButton = new JButton("Prev");
+    private JButton stopButton = new JButton("Stop");
 
 
     //random variables, placeholder while trying things out
-    BufferedImage image;
-
-    ArrayList<Song> songList = new ArrayList<>();
-    AudioClip clip;
+    private BufferedImage image;
+    private ArrayList<Song> songList = new ArrayList<>();
+    private MediaPlayer mediaPlayer;
     private Boolean songPlaying = false;
 
-    //MusicPlayerModel not implemented yet, might be changed in the future
+    //MusicPlayerModel not implemented ye t, might be changed in the future
 
 
     public MusicPlayerView(MusicPlayerModel model) {
@@ -59,6 +51,7 @@ public class MusicPlayerView extends JFrame {
 
         Playlist playlist = new Playlist("Playlist 1", "Initial playlist.", songList);
 
+        JLabel currentPlaylist = new JLabel("");
         currentPlaylist.setText(playlist.getPlaylistName());
 
         try {
@@ -91,6 +84,7 @@ public class MusicPlayerView extends JFrame {
         table.setDefaultEditor(Object.class, null);
         JScrollPane scrollPane = new JScrollPane(table);
 
+        JPanel panel = new JPanel();
         panel.add(currentPlaylist);
         panel.add(addButton);
         panel.add(removeButton);
@@ -103,6 +97,8 @@ public class MusicPlayerView extends JFrame {
         panel.add(albumImage);
         panel.add(status);
 
+        //GUI stuff
+        JFrame frame = new JFrame("Music Player");
         frame.add(panel);
         panel.setLayout(new FlowLayout());
 
@@ -160,14 +156,16 @@ public class MusicPlayerView extends JFrame {
         }
     }
 
+
     public void playSong() {
 
         try {
             if (songPlaying) {
-                clip.stop();
+                mediaPlayer.stop();
             }
 
             int selectedRow = table.getSelectedRow();
+
             Song song = songList.get(selectedRow);
             String songPath = song.getSongPath();
 
@@ -181,24 +179,15 @@ public class MusicPlayerView extends JFrame {
 
             currentSong.setText("Now playing: " + songList.get(selectedRow).getName() + " by " + songList.get(selectedRow).getArtist());
 
-            URL url = null;
-
-            File file = new File(songPath);
-
-            if (file.canRead())
-                url = file.toURI().toURL();
-
-            clip = Applet.newAudioClip(url);
-
-            clip.play();
+            Media hit = new Media(new File(songPath).toURI().toString());
+            mediaPlayer = new MediaPlayer(hit);
+            mediaPlayer.play();
             songPlaying = true;
 
 
             status.setText("");
         } catch (ArrayIndexOutOfBoundsException e) {
             status.setText("Select a song to play!");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         }
 
     }
@@ -206,9 +195,8 @@ public class MusicPlayerView extends JFrame {
     public void stopSong() {
 
         if (songPlaying) {
-            clip.stop();
+            mediaPlayer.stop();
         }
 
     }
-
 }

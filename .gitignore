@@ -36,7 +36,9 @@
 # .idea/modules.xml
 # .idea/*.iml
 # .idea/modules
-# *.iml
+MusicPlayer/MusicPlayer.iml
+restfulAPI/*.iml
+*.iml
 # *.ipr
 
 # CMake
@@ -52,6 +54,7 @@ cmake-build-*/
 out/
 MusicPlayer/out
 .idea
+target/
 
 
 # mpeltonen/sbt-idea plugin
