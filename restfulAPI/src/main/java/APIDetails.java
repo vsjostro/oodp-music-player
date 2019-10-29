@@ -1,13 +1,9 @@
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URLEncoder;
 import com.google.gson.*;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import java.util.Scanner;
 
 /** Class Description of APIDetails
  *
@@ -42,16 +38,20 @@ public class APIDetails {
     private String[] getAPIDetails(String userInput) throws UnirestException {
         String[] apiDetails = new String[4];
 
-        HttpResponse<String> response = getHTTPResponse("slow dancing in the dark joji");
+        try {
+            HttpResponse<String> response = getHTTPResponse(userInput);
 
-        // CHECK FOR NULL RESPONSE
-        JsonObject jobject = createJSONObject(response);
-        JsonObject song = getSongObject(jobject);
+            // CHECK FOR NULL RESPONSE
+            JsonObject jobject = createJSONObject(response);
+            JsonObject song = getSongObject(jobject);
 
-        apiDetails[0] = extractSongTitle(song);
-        apiDetails[1] = extractArtistName(song);
-        apiDetails[2] = extractSmallArtURL(song);
-        apiDetails[3] = extractBigArtURL(song);
+            apiDetails[0] = extractSongTitle(song);
+            apiDetails[1] = extractArtistName(song);
+            apiDetails[2] = extractSmallArtURL(song);
+            apiDetails[3] = extractBigArtURL(song);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return apiDetails;
     }
@@ -83,17 +83,25 @@ public class APIDetails {
     // MAKE SURE KEY IS CORRECT/UPDATED
     // takes in the user input name for the song and artist (we should tell them to follow certain format)
     private HttpResponse<String> getHTTPResponse(String userInput) throws UnirestException {
-        String transformed = userInput.replaceAll(" ", "%20");
-        String unirestURL = "https://genius.p.rapidapi.com/search?q=" + transformed;
+        HttpResponse<String> response = null;
 
-        HttpResponse<String> response = Unirest.get(unirestURL)
-                .header("x-rapidapi-host", "genius.p.rapidapi.com")
-                .header("x-rapidapi-key", "f5b9667b81mshe5ad2b60905317bp1db8d5jsn21ec6987e4bd")
-                .asString();
+        try {
+            String transformed = userInput.replaceAll(" ", "%20");
+            String unirestURL = "https://genius.p.rapidapi.com/search?q=" + transformed;
 
-        int responseStatusCode = response.getStatus();
-        if (!checkAPIStatus(responseStatusCode)) {
-            return null;
+            response = Unirest.get(unirestURL)
+                    .header("x-rapidapi-host", "genius.p.rapidapi.com")
+                    .header("x-rapidapi-key", "f5b9667b81mshe5ad2b60905317bp1db8d5jsn21ec6987e4bd")
+                    .asString();
+
+            int responseStatusCode = response.getStatus();
+
+            if (!checkAPIStatus(responseStatusCode)) {
+                return null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return response;
@@ -134,19 +142,23 @@ public class APIDetails {
     // THEN THEY NEED TO HAVE PYTHON3 ???
     // TURN .PY INTO EXECUTABLE
     private String extractLyrics(String songName, String artistName, String clientAccessToken) throws Exception {
-        Process process = Runtime.getRuntime().exec(new String[]{"python3",
-                "/Users/parkermitchell/Desktop/lyricsGeniusTest.py",
-                songName, artistName, clientAccessToken});
-
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
         String lyrics = null;
-        while ((lyrics = stdInput.readLine()) != null)
-        {
-            System.out.println(lyrics);
-        }
 
+        try {
+            Process process = Runtime.getRuntime().exec(new String[]{"python3",
+                    "/Users/parkermitchell/Desktop/lyricsGeniusTest.py",
+                    songName, artistName, clientAccessToken});
+
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            while ((lyrics = stdInput.readLine()) != null) {
+//                System.out.println(lyrics);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(lyrics);
         return lyrics;
     }
-
 }
