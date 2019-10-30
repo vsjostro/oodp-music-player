@@ -7,10 +7,8 @@ public class Driver {
 
         APIDetails songAPIDetails = song.getApiDetails();
         String lyrics = songAPIDetails.getSongLyrics();
-//        System.out.println(songAPIDetails.getSongName());
-        LyricsWindow frame = new LyricsWindow(lyrics);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-
+        System.out.println(lyrics);
+        LyricWindow lw = new LyricWindow(lyrics);
+        lw.makeLyricWindow(lyrics);
     }
 }

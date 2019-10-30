@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+
 import com.google.gson.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -142,7 +143,12 @@ public class APIDetails {
     // THEN THEY NEED TO HAVE PYTHON3 ???
     // TURN .PY INTO EXECUTABLE
     private String extractLyrics(String songName, String artistName, String clientAccessToken) throws Exception {
-        String lyrics = null;
+        String line;
+        StringBuilder lyrics = new StringBuilder();
+        lyrics.append(songName);
+        lyrics.append(" by ");
+        lyrics.append(artistName);
+        lyrics.append("\n\n");
 
         try {
             Process process = Runtime.getRuntime().exec(new String[]{"python3",
@@ -151,14 +157,22 @@ public class APIDetails {
 
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-            while ((lyrics = stdInput.readLine()) != null) {
-//                System.out.println(lyrics);
+
+            // ISSUE HERE
+
+            // To get rid of the extra leading information that is unneeded
+            stdInput.readLine();
+            stdInput.readLine();
+            stdInput.readLine();
+
+            while ((line = stdInput.readLine()) != null) {
+                lyrics.append(line);
+                lyrics.append("\n");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(lyrics);
-        return lyrics;
+        return lyrics.toString();
     }
 }
