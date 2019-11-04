@@ -154,7 +154,7 @@ public class APIDetails {
 
         try {
             Process process = Runtime.getRuntime().exec(new String[]{"python3",
-                    "/Users/parkermitchell/Desktop/lyricsGeniusTest.py",
+                    "./__pycache__/lyricParser.cpython-36.pyc",
                     songName, artistName, clientAccessToken});
 
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
