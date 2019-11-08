@@ -2,6 +2,8 @@ package main.API;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.google.gson.*;
 import com.mashape.unirest.http.HttpResponse;
@@ -152,10 +154,16 @@ public class APIDetails {
         lyrics.append(artistName);
         lyrics.append("\n\n");
 
+//        System.getProperty("user.dir");
+//        Path currentRelativePath = Paths.get("");
+//        String s = currentRelativePath.toAbsolutePath().toString();
+//        System.out.println("Current relative path is: " + s);
+
         try {
-            Process process = Runtime.getRuntime().exec(new String[]{"python3",
-                    "./lyricParser.cpython-36.pyc",
+            Process process = Runtime.getRuntime().exec(new String[]{
+                    "./MusicPlayer/src/main/API/dist/lyricParser",
                     songName, artistName, clientAccessToken});
+            process.waitFor();
 
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
