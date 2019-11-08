@@ -159,22 +159,45 @@ public class APIDetails {
 //        String s = currentRelativePath.toAbsolutePath().toString();
 //        System.out.println("Current relative path is: " + s);
 
+
         try {
-            Process process = Runtime.getRuntime().exec(new String[]{
-                    "./MusicPlayer/src/main/API/dist/lyricParser",
-                    songName, artistName, clientAccessToken});
-            process.waitFor();
+            String os = System.getProperty("os.name").toLowerCase();
 
-            BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            if (os.contains("mac")) {
+                Process process = Runtime.getRuntime().exec(new String[]{
+                        "./MusicPlayer/src/main/API/dist/lyricParser",
+                        songName, artistName, clientAccessToken});
+                process.waitFor();
 
-            // To get rid of the extra leading information that is unneeded
-            stdInput.readLine();
-            stdInput.readLine();
-            stdInput.readLine();
+                BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-            while ((line = stdInput.readLine()) != null) {
-                lyrics.append(line);
-                lyrics.append("\n");
+                // To get rid of the extra leading information that is unneeded
+                stdInput.readLine();
+                stdInput.readLine();
+                stdInput.readLine();
+
+                while ((line = stdInput.readLine()) != null) {
+                    lyrics.append(line);
+                    lyrics.append("\n");
+                }
+            }
+            else if (os.contains("windows")) {
+                Process process = Runtime.getRuntime().exec(new String[]{
+                        "./MusicPlayer/src/main/API/dist/lyricParser",
+                        songName, artistName, clientAccessToken});
+                process.waitFor();
+
+                BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+                // To get rid of the extra leading information that is unneeded
+                stdInput.readLine();
+                stdInput.readLine();
+                stdInput.readLine();
+
+                while ((line = stdInput.readLine()) != null) {
+                    lyrics.append(line);
+                    lyrics.append("\n");
+                }
             }
 
         } catch (Exception e) {
