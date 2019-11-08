@@ -4,6 +4,8 @@ import main.model.MusicPlayerModel;
 import main.view.MusicPlayerView;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -22,6 +24,7 @@ public class MusicPlayerController {
         view.addStopSongListener(new StopSongListener());
         view.addNextSongListener(new NextSongListener());
         view.addPrevSongListener(new PrevSongListener());
+        view.addListEventListener(new ListEventListener());
 
     }
 
@@ -90,4 +93,11 @@ public class MusicPlayerController {
         }
     }
 
+    class ListEventListener implements ListSelectionListener {
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            view.changePlaylist();
+        }
+    }
 }
