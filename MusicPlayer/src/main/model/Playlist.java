@@ -8,6 +8,7 @@ public class Playlist {
     private String playlistDescription;
     private ArrayList<Song> songs;
     private String imagePath;
+    private int playlistID;
 
     public Playlist(String playlistName, String playlistDescription, ArrayList songs) {
         this.playlistName = playlistName;

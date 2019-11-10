@@ -1,5 +1,7 @@
 package main.model;
 
+import main.API.APIDetails;
+
 public class Song {
 
     private String name;
@@ -7,8 +9,13 @@ public class Song {
     private String artist;
     private String songPath;
     private String imagePath;
+    private APIDetails apiDetails;
 
-    static int gid = 0;
+    private static int gid = 0;
+
+    public Song(String userInput) throws Exception {
+        this.apiDetails = new APIDetails(userInput);
+    }
 
     public Song(String name, String artist, String songPath) {
         this.name = name;
@@ -65,5 +72,9 @@ public class Song {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public APIDetails getApiDetails() {
+        return apiDetails;
     }
 }
