@@ -11,12 +11,12 @@ import java.awt.*;
  */
 
 
-class LyricWindow extends JFrame
+public class LyricWindow extends JFrame
 {
     private static final int DEFAULT_WIDTH = 500;
     private static final int DEFAULT_HEIGHT = 500;
 
-    LyricWindow(String lyrics)
+    public LyricWindow(String lyrics)
     {
         setTitle("Lyrics");
         setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
