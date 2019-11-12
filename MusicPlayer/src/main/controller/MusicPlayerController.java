@@ -1,6 +1,5 @@
 package main.controller;
 
-import main.model.MusicPlayerModel;
 import main.view.MusicPlayerView;
 
 import javax.swing.*;
@@ -12,14 +11,16 @@ import java.awt.event.ActionListener;
 public class MusicPlayerController {
 
     private MusicPlayerView view;
-    private MusicPlayerModel model;
+    //private MusicPlayerModel model;
 
-    public MusicPlayerController(MusicPlayerModel model, MusicPlayerView view) {
-        this.model = model;
+    public MusicPlayerController(MusicPlayerView view) {
+        //this.model = model;
         this.view = view;
 
         view.addSongListener(new AddSongListener());
         view.addRemoveListener(new RemoveSongListener());
+        view.addPlaylistListener(new AddPlaylistListener());
+        view.removePlaylistListener(new RemovePlaylistListener());
         view.addPlaySongListener(new PlaySongListener());
         view.addStopSongListener(new StopSongListener());
         view.addNextSongListener(new NextSongListener());
@@ -54,10 +55,35 @@ public class MusicPlayerController {
         }
     }
 
+    class AddPlaylistListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            String name = JOptionPane.showInputDialog(null, "Enter playlist name");
+            String description = JOptionPane.showInputDialog(null, "Enter description (optional)");
+
+            if (name.equals("") || name == null) {
+                System.out.println("Playlist name cannot be empty");
+            }else {
+                view.addPlaylist(name, description);
+            }
+
+        }
+    }
+
+    class RemovePlaylistListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.removePlaylist();
+        }
+    }
+
     class RemoveSongListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            view.removeSong();
+            view.removeSongFromPlaylist();
         }
     }
 

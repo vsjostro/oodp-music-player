@@ -3,7 +3,6 @@ package main;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import main.controller.MusicPlayerController;
-import main.model.MusicPlayerModel;
 import main.view.MusicPlayerView;
 
 public class MusicPlayer extends Application{
@@ -13,9 +12,9 @@ public class MusicPlayer extends Application{
     }
 
     public void start(Stage args0) {
-        MusicPlayerModel model = new MusicPlayerModel();
-        MusicPlayerView view = new MusicPlayerView(model);
-        MusicPlayerController controller = new MusicPlayerController(model, view);
+        //Playlist model = new getInitialPlaylist
+        MusicPlayerView view = new MusicPlayerView();
+        MusicPlayerController controller = new MusicPlayerController(view);
 
     }
 

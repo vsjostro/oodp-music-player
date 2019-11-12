@@ -11,7 +11,7 @@ public class Song {
     private String imagePath;
     private APIDetails apiDetails;
 
-    private static int gid = 0;
+    //private static int gid = 0;
 
     public Song(String userInput) throws Exception {
         this.apiDetails = new APIDetails(userInput);
@@ -21,17 +21,17 @@ public class Song {
         this.name = name;
         this.artist = artist;
         this.songPath = songPath;
-        this.id = gid;
-        gid++;
+        this.id = id;
+        //gid++;
     }
 
-    public Song(String name, String artist, String songPath, String imagePath) {
+    public Song(int id, String name, String artist, String songPath, String imagePath) {
         this.name = name;
         this.artist = artist;
         this.songPath = songPath;
-        this.id = gid;
+        this.id = id;
         this.imagePath = imagePath;
-        gid++;
+        //gid++;
     }
 
     public String getName() {
