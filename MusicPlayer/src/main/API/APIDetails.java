@@ -1,12 +1,15 @@
 package main.API;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 /** A class that handles API requests and information gathering from
  *  the APIs used. This class is used to get information about a given
@@ -39,7 +42,7 @@ public class APIDetails {
     /** The constructor for the API details object. This takes in a String, "userInput",
      *  and creates an API details object.
      *
-     * @param String userInput
+     * @param userInput
      */
     public APIDetails(String userInput) throws Exception {
         String[] apiDetails = getAPIDetails(userInput);

@@ -8,6 +8,14 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * The controller for the application. Handles the events when buttons
+ * are pressed.
+ *
+ * @author Viktor
+ * @version 1.0
+ */
+
 public class MusicPlayerController {
 
     private MusicPlayerView view;
@@ -65,7 +73,7 @@ public class MusicPlayerController {
 
             if (name.equals("") || name == null) {
                 System.out.println("Playlist name cannot be empty");
-            }else {
+            } else {
                 view.addPlaylist(name, description);
             }
 

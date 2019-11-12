@@ -1,6 +1,5 @@
 package main.view;
 
-
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import main.db.MusicPlayerDatabase;
@@ -18,6 +17,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * MusicPlayerView handles all the GUI related things and also
+ * the functions related to the buttons on the GUI. MVC is not
+ * entirely implemented, but the actionlisteners are connected to
+ * the MusicPlayerController.
+ *
+ * @author Viktor
+ * @version 1.0
+ */
+
 public class MusicPlayerView extends JFrame {
 
     private MusicPlayerDatabase database = new MusicPlayerDatabase();
@@ -25,13 +34,11 @@ public class MusicPlayerView extends JFrame {
     private JLabel currentSongLabel = new JLabel("Pick a song and press play");
     private JLabel currentPlaylistLabel = new JLabel("");
     private JLabel albumImage = new JLabel();
-    private JTextArea lyricsTextArea = new JTextArea("foo");
-    JScrollPane lyricsScrollPane;
+    private JScrollPane lyricsScrollPane;
     private JLabel status = new JLabel("");
 
     private DefaultTableModel songTableModel = new DefaultTableModel();
     private JTable songTable = new JTable(songTableModel);
-    JScrollPane scrollPane;
 
     private DefaultListModel libraryListModel = new DefaultListModel();
     private JList libraryList = new JList(libraryListModel);
@@ -44,17 +51,10 @@ public class MusicPlayerView extends JFrame {
     private JButton prevButton = new JButton("Prev");
     private JButton stopButton = new JButton("Stop");
 
-    //Menubar init
-    JMenuBar menuBar = new JMenuBar();
-    JMenu addMenu = new JMenu("Add");
-    JMenu removeMenu = new JMenu("Remove");
-    JMenu editMenu = new JMenu("Edit");
-    JMenuItem addSongItem = new JMenuItem("Add Song");
-    JMenuItem addPlaylistItem = new JMenuItem("Add Playlist");
-    JMenuItem removeSongItem = new JMenuItem("Remove Song");
-    JMenuItem removePlaylistItem = new JMenuItem("Remove Playlist");
-    JMenuItem editSongItem = new JMenuItem("Edit Song");
-    JMenuItem editPlaylistItem = new JMenuItem("Edit Playlist");
+    private JMenuItem addSongItem;
+    private JMenuItem addPlaylistItem;
+    private JMenuItem removeSongItem;
+    private JMenuItem removePlaylistItem;
 
 
     //random variables, placeholder while trying things out
@@ -66,7 +66,14 @@ public class MusicPlayerView extends JFrame {
     private Song currentSong;
     private Playlist currentPlaylist;
 
-    //MusicPlayerModel not implemented ye t, might be changed in the future
+
+    /**
+     * The constructor for the View, all GUI components are added
+     * and configured. Currently BorderLayout is used and the
+     * components are assigned to different panels depending on
+     * where the components should be placed.
+     */
+
     public MusicPlayerView() {
 
 
@@ -75,14 +82,25 @@ public class MusicPlayerView extends JFrame {
         //JDialog.setDefaultLookAndFeelDecorated(true);
         //JFrame.setDefaultLookAndFeelDecorated(false);
 
+        //Menubar init
+        JMenuBar menuBar = new JMenuBar();
+        JMenu addMenu = new JMenu("Add");
         menuBar.add(addMenu);
+        JMenu removeMenu = new JMenu("Remove");
         menuBar.add(removeMenu);
+        JMenu editMenu = new JMenu("Edit");
         menuBar.add(editMenu);
+        addSongItem = new JMenuItem("Add Song");
         addMenu.add(addSongItem);
+        addPlaylistItem = new JMenuItem("Add Playlist");
         addMenu.add(addPlaylistItem);
+        removeSongItem = new JMenuItem("Remove Song");
         removeMenu.add(removeSongItem);
+        removePlaylistItem = new JMenuItem("Remove Playlist");
         removeMenu.add(removePlaylistItem);
+        JMenuItem editSongItem = new JMenuItem("Edit Song");
         editMenu.add(editSongItem);
+        JMenuItem editPlaylistItem = new JMenuItem("Edit Playlist");
         editMenu.add(editPlaylistItem);
 
         songTableModel.addColumn("Id");
@@ -110,7 +128,6 @@ public class MusicPlayerView extends JFrame {
         Playlist playlist2 = new Playlist("Playlist 2", "Playlist2 description", songList);
 
         Playlist songLibrary = new Playlist("Song library", "test", songList);*/
-        //SongLibrary songLibrary = new SongLibrary(songList);
 
         /*playlistList.add(playlist1);
         playlistList.add(playlist2);
@@ -120,7 +137,7 @@ public class MusicPlayerView extends JFrame {
         libraryList.setBackground(Color.lightGray);
         libraryList.setFont(new Font(null, Font.PLAIN, 18));
 
-        //lyricsTextArea.setPreferredSize(new Dimension(300, 600));
+        JTextArea lyricsTextArea = new JTextArea("foo");
         lyricsTextArea.setLineWrap(true);
         lyricsTextArea.setWrapStyleWord(true);
 
@@ -154,17 +171,13 @@ public class MusicPlayerView extends JFrame {
 
 
         songTable.setBounds(30, 40, 200, 300);
-
-        //Currently messes up when sorting and removing files
-        //songTable.setAutoCreateRowSorter(true);
         songTable.setDefaultEditor(Object.class, null);
         songTable.setFont(new Font("", Font.PLAIN, 24));
         songTable.setRowHeight(40);
-        scrollPane = new JScrollPane(songTable);
-        scrollPane.setPreferredSize(new Dimension(1100, 800));
+        JScrollPane songTableScrollPane = new JScrollPane(songTable);
+        songTableScrollPane.setPreferredSize(new Dimension(1100, 800));
 
         lyricsScrollPane = new JScrollPane(lyricsTextArea);
-        //lyricsScrollPane.setPreferredSize(new Dimension(lyricsTextArea.getPreferredSize()));
         lyricsScrollPane.setPreferredSize(new Dimension(300, 600));
 
 
@@ -182,7 +195,7 @@ public class MusicPlayerView extends JFrame {
         panel1.add(currentPlaylistLabel, BorderLayout.CENTER);
         panel1.add(removeButton, BorderLayout.EAST);
         panel2.add(libraryList, BorderLayout.WEST);
-        panel3.add(scrollPane, BorderLayout.CENTER);
+        panel3.add(songTableScrollPane, BorderLayout.CENTER);
         panel4.add(currentSongLabel);
         panel4.add(playButton);
         panel4.add(prevButton);
@@ -202,8 +215,6 @@ public class MusicPlayerView extends JFrame {
 
         //extra customization
         songTable.setGridColor(Color.black);
-        //songTable.setBackground(Color.yellow);
-        //panel1.setBackground(Color.lightGray);
         ImageIcon image = new ImageIcon("MusicPlayer/src/resources/images/icon.png");
         frame.setIconImage(image.getImage());
         frame.setJMenuBar(menuBar);
@@ -228,8 +239,6 @@ public class MusicPlayerView extends JFrame {
     public void removePlaylistListener(ActionListener actionListener) {
         removePlaylistItem.addActionListener(actionListener);
     }
-
-
 
     public void addRemoveListener(ActionListener actionListener) {
         removeButton.addActionListener(actionListener);
@@ -256,37 +265,57 @@ public class MusicPlayerView extends JFrame {
         libraryList.addListSelectionListener(listSelectionListener);
     }
 
+    /**
+     * This method adds song to the table
+     *
+     * @param title    Title of the song
+     * @param artist   Artist of the song
+     * @param songPath Local path of the song.
+     */
+
     public void addSongToTable(String title, String artist, String songPath) {
 
         database.addSongToLibrary(title, artist, songPath);
         updateSongTable();
-/*
-        Song song = new Song(title, artist, songPath);
-        currentPlaylist.getSongs().add(song);
-        songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});*/
     }
-    public void addSongToLibrary(String title, String artist, String songPath) {
+
+    /*public void addSongToLibrary(String title, String artist, String songPath) {
 
         database.addSongToLibrary(title, artist, songPath);
 
-        /*Song song = new Song(title, artist, songPath);
+        *//*Song song = new Song(title, artist, songPath);
         currentPlaylist.getSongs().add(song);
-        songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});*/
-    }
+        songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});*//*
+    }*/
+
+    /**
+     * This method removes a song from the current playlist.
+     * The song that is selected in the table is removed.
+     * A song has to be selected before it can be removed.
+     */
 
     public void removeSongFromPlaylist() {
 
         int selectedRow = songTable.getSelectedRow();
+        System.out.println(selectedRow);
 
-        database.removeSongFromPlaylist(currentPlaylist, selectedRow+1);
+        if (selectedRow == -1) {
+            System.out.println("no song selected");
+        } else {
 
-        /*status.setText("Song " + currentPlaylist.getSongs().get(selectedRow).getName() + " removed");
-        currentPlaylist.getSongs().remove(selectedRow);
-        songTableModel.removeRow(selectedRow);*/
-        updateSongTable();
+            database.removeSongFromPlaylist(currentPlaylist, playlistList, selectedRow + 1);
+            updateSongTable();
 
+        }
     }
 
+
+    /**
+     * This method calls the playSong method if a song
+     * is selected and the play button is pressed. If no
+     * song is pressed, the status message will inform the
+     * user.
+     */
     public void playButtonPressed() {
 
         try {
@@ -299,7 +328,16 @@ public class MusicPlayerView extends JFrame {
         }
     }
 
-    public void playSong(Song song) {
+    /**
+     * This method plays the selected song. If a song
+     * is playing it will be stopped before the new song
+     * starts playing. If the song has album art, it will be
+     * displayed. Otherwise a default image will be displayed.
+     *
+     * @param song The selected song from the table
+     */
+
+    private void playSong(Song song) {
 
         //stops song if a song is currently playing
         stopSong();
@@ -330,6 +368,9 @@ public class MusicPlayerView extends JFrame {
         status.setText("");
     }
 
+    /**
+     * This method stops a song if a song is playing
+     */
     public void stopSong() {
 
         if (songPlaying) {
@@ -337,6 +378,11 @@ public class MusicPlayerView extends JFrame {
         }
     }
 
+    /**
+     * This method plays the next song in the playlist.
+     * If the current song is the last one in the playlist, the
+     * user will be informed and the current song keeps playing.
+     */
     public void nextSong() {
 
         try {
@@ -350,6 +396,11 @@ public class MusicPlayerView extends JFrame {
         }
     }
 
+    /**
+     * This method plays the previous song in the playlist.
+     * If the current song is the firest one in the playlist, the
+     * user will be informed and the current song keeps playing.
+     */
     public void prevSong() {
 
         try {
@@ -362,6 +413,12 @@ public class MusicPlayerView extends JFrame {
             status.setText("First song in playlist");
         }
     }
+
+    /**
+     * This method changes the current playlist to a playlist
+     * chosen by the user. The table is cleared and the songs
+     * from the selected playlist will be added to the table
+     */
 
     public void changePlaylist() {
 
@@ -385,7 +442,11 @@ public class MusicPlayerView extends JFrame {
 
     }
 
-    public void updateSongTable() {
+    /**
+     * This method updates the table, for example when
+     * a song is removed or added to the current playlist.
+     */
+    private void updateSongTable() {
 
         database.updateTable(currentPlaylist);
         for (int i = songTableModel.getRowCount() - 1; i > -1; i--) {
@@ -398,22 +459,34 @@ public class MusicPlayerView extends JFrame {
 
     }
 
+    /**
+     * This method adds a playlist to the list of playlists.
+     * First it is added to the database and then to the list of playlists.
+     *
+     * @param name        Name of the playlist
+     * @param description Description of the playlist, optional
+     */
     public void addPlaylist(String name, String description) {
         Playlist playlist = database.addPlaylist(name, description, playlistList);
         libraryListModel.addElement(playlist.getPlaylistName());
 
     }
 
+    /**
+     * This method removes a playlist from the list of playlists.
+     * If the user has chosen the song library to be removed, the
+     * user will be informed that the song library cannot be removed.
+     */
     public void removePlaylist() {
 
         int selectedPlaylist = libraryList.getSelectedIndex();
         int playlistID = playlistList.get(selectedPlaylist).getPlaylistID();
 
         if (selectedPlaylist == 0) {
-            System.out.println("Can't delete library!");
-        }else {
+            status.setText("Can't delete library!");
+        } else {
             database.removePlaylist(playlistID);
-            System.out.println(playlistList.get(selectedPlaylist).getPlaylistName()+ " deleted");
+            System.out.println(playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
         }
 
     }
