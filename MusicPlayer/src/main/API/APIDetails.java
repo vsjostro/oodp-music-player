@@ -260,9 +260,6 @@ public class APIDetails {
      *
      * @return String lyrics
      * */
-    // NEED TO INCLUDE PYTHON SCRIPT IN PACKAGE OR SOMETHING
-    // THEN THEY NEED TO HAVE PYTHON3 ???
-    // TURN .PY INTO EXECUTABLE
     private String extractLyrics(String songName, String artistName, String clientAccessToken) throws Exception {
         String line;
         StringBuilder lyrics = new StringBuilder();
