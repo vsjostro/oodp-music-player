@@ -146,7 +146,7 @@ public class MusicPlayerView extends JFrame {
         albumImage.setVerticalAlignment(JLabel.CENTER);
 
         try {
-            image = ImageIO.read(new File("MusicPlayer/src/resources/images/defaultImage.png"));
+            image = ImageIO.read(new File("MusicPlayer/src/resources/images/slowRush2.jpg"));
             Image img = image.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
             albumImage.setIcon(new ImageIcon(img));
         } catch (IOException e) {
