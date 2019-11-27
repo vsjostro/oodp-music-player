@@ -3,6 +3,7 @@ package main;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import main.controller.MusicPlayerController;
+import main.db.MusicPlayerDatabase;
 import main.view.MusicPlayerView;
 
 /**
@@ -19,6 +20,7 @@ public class MusicPlayer extends Application {
 
     /**
      * The main method, launches the JavaFX application
+     *
      * @param args Not used
      */
     public static void main(String[] args) {
@@ -30,7 +32,8 @@ public class MusicPlayer extends Application {
      */
     public void start(Stage args0) {
         MusicPlayerView view = new MusicPlayerView();
-        MusicPlayerController controller = new MusicPlayerController(view);
+        MusicPlayerDatabase database = new MusicPlayerDatabase(view);
+        MusicPlayerController controller = new MusicPlayerController(view, database);
 
     }
 

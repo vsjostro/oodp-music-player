@@ -38,6 +38,7 @@ public class Playlist {
 
     /**
      * Sets the playlist name, will be used when playlist name is edited
+     *
      * @param playlistName The name of the playlist
      */
     public void setPlaylistName(String playlistName) {
@@ -46,6 +47,7 @@ public class Playlist {
 
     /**
      * Sets the playlist description, will be used when playlist description is edited
+     *
      * @param playlistDescription The description of the playlist
      */
     public void setPlaylistDescription(String playlistDescription) {
@@ -54,6 +56,7 @@ public class Playlist {
 
     /**
      * Sets the current song list for the playlist
+     *
      * @param songs The list of songs for the playlist
      */
     public void setSongs(ArrayList<Song> songs) {

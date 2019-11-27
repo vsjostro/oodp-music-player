@@ -1,6 +1,5 @@
 package main.view;
 
-import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import main.db.MusicPlayerDatabase;
 import main.model.Playlist;
@@ -8,13 +7,15 @@ import main.model.Song;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -31,40 +32,46 @@ public class MusicPlayerView extends JFrame {
 
     private MusicPlayerDatabase database = new MusicPlayerDatabase();
 
-    private JLabel currentSongLabel = new JLabel("Pick a song and press play");
-    private JLabel currentPlaylistLabel = new JLabel("");
-    private JLabel albumImage = new JLabel();
+    public JLabel currentSongLabel = new JLabel("Pick a song and press play");
+    public JLabel currentPlaylistLabel = new JLabel();
+    public JTextArea playlistDescription;
+    public JLabel albumImage = new JLabel();
     private JScrollPane lyricsScrollPane;
-    private JLabel status = new JLabel("");
+    public JLabel status = new JLabel("");
 
-    private DefaultTableModel songTableModel = new DefaultTableModel();
-    private JTable songTable = new JTable(songTableModel);
+    public DefaultTableModel songTableModel = new DefaultTableModel();
+    public JTable songTable = new JTable(songTableModel);
 
-    private DefaultListModel libraryListModel = new DefaultListModel();
-    private JList libraryList = new JList(libraryListModel);
+    public DefaultListModel libraryListModel = new DefaultListModel();
+    public JList libraryList = new JList(libraryListModel);
 
     private JButton addButton = new JButton("Add song");
     private JButton removeButton = new JButton("Remove song");
-    private JButton editButton = new JButton("Edit playlist");
     private JButton playButton = new JButton("Play");
     private JButton nextButton = new JButton("Next");
     private JButton prevButton = new JButton("Prev");
     private JButton stopButton = new JButton("Stop");
+    private JButton fullscreenButton = new JButton("Fullscreen");
 
-    private JMenuItem addSongItem;
+    public JProgressBar seekBar = new JProgressBar();
+    public JSlider volumeSlider = new JSlider();
+
+    private JMenuItem addSongToLibraryItem;
+    private JMenuItem addSongToPlaylistItem;
     private JMenuItem addPlaylistItem;
     private JMenuItem removeSongItem;
     private JMenuItem removePlaylistItem;
+    private JMenuItem editPlaylistItem;
 
 
     //random variables, placeholder while trying things out
     private BufferedImage image;
     private ArrayList<Song> songList = new ArrayList<>();
-    private ArrayList<Playlist> playlistList = new ArrayList<>();
-    private MediaPlayer mediaPlayer;
-    private Boolean songPlaying = false;
-    private Song currentSong;
-    private Playlist currentPlaylist;
+    public ArrayList<Playlist> playlistList = new ArrayList<>();
+    public MediaPlayer mediaPlayer;
+    public Boolean songPlaying = false;
+    public Song currentSong;
+    public Playlist currentPlaylist;
 
 
     /**
@@ -90,17 +97,19 @@ public class MusicPlayerView extends JFrame {
         menuBar.add(removeMenu);
         JMenu editMenu = new JMenu("Edit");
         menuBar.add(editMenu);
-        addSongItem = new JMenuItem("Add Song");
-        addMenu.add(addSongItem);
+        addSongToLibraryItem = new JMenuItem("Add Song to library");
+        addMenu.add(addSongToLibraryItem);
+        addSongToPlaylistItem = new JMenuItem("Add Song to playlist");
+        addMenu.add(addSongToPlaylistItem);
         addPlaylistItem = new JMenuItem("Add Playlist");
         addMenu.add(addPlaylistItem);
         removeSongItem = new JMenuItem("Remove Song");
         removeMenu.add(removeSongItem);
         removePlaylistItem = new JMenuItem("Remove Playlist");
         removeMenu.add(removePlaylistItem);
-        JMenuItem editSongItem = new JMenuItem("Edit Song");
-        editMenu.add(editSongItem);
-        JMenuItem editPlaylistItem = new JMenuItem("Edit Playlist");
+        //JMenuItem editSongItem = new JMenuItem("Edit Song");
+        //editMenu.add(editSongItem);
+        editPlaylistItem = new JMenuItem("Edit Playlist");
         editMenu.add(editPlaylistItem);
 
         songTableModel.addColumn("Id");
@@ -110,6 +119,7 @@ public class MusicPlayerView extends JFrame {
         database.initPlaylists(playlistList);
         currentPlaylist = playlistList.get(0);
 
+
         for (Playlist playlist : playlistList) {
             libraryListModel.addElement(playlist.getPlaylistName());
         }
@@ -118,135 +128,174 @@ public class MusicPlayerView extends JFrame {
         for (Song song : currentPlaylist.getSongs()) {
             songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});
         }
+        Border border = BorderFactory.createLineBorder(Color.black);
 
         currentPlaylistLabel.setText(currentPlaylist.getPlaylistName());
         currentPlaylistLabel.setHorizontalAlignment(JLabel.CENTER);
         currentPlaylistLabel.setVerticalAlignment(JLabel.CENTER);
 
-        //song library is a playlist object for now
-        /*Playlist playlist1 = new Playlist("Playlist 1", "Playlist1 description", songList);
-        Playlist playlist2 = new Playlist("Playlist 2", "Playlist2 description", songList);
-
-        Playlist songLibrary = new Playlist("Song library", "test", songList);*/
-
-        /*playlistList.add(playlist1);
-        playlistList.add(playlist2);
-        playlistList.add(songLibrary);*/
-
         libraryList.setPreferredSize(new Dimension(300, 800));
         libraryList.setBackground(Color.lightGray);
         libraryList.setFont(new Font(null, Font.PLAIN, 18));
+        libraryList.setBorder(border);
+
+        playlistDescription = new JTextArea();
+        playlistDescription.setPreferredSize(new Dimension(300, 300));
+        playlistDescription.setBorder(border);
+        playlistDescription.setText(currentPlaylist.getPlaylistDescription());
+        playlistDescription.setEditable(false);
+
 
         JTextArea lyricsTextArea = new JTextArea("foo");
         lyricsTextArea.setLineWrap(true);
         lyricsTextArea.setWrapStyleWord(true);
+        lyricsTextArea.setEditable(false);
 
         albumImage.setPreferredSize(new Dimension(300, 300));
         albumImage.setHorizontalAlignment(JLabel.CENTER);
         albumImage.setVerticalAlignment(JLabel.CENTER);
 
         try {
-            image = ImageIO.read(new File("MusicPlayer/src/resources/images/slowRush2.jpg"));
+            image = ImageIO.read(new File("MusicPlayer/src/resources/images/slowRush.png"));
             Image img = image.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
             albumImage.setIcon(new ImageIcon(img));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        //Initial values, remove later. song1 and song2 not working for some reason
-        /*Song song1 = new Song("epic", "Artist1", "MusicPlayer/src/resources/songs/epic.wav");
-        Song song2 = new Song("groove", "Artist2", "MusicPlayer/src/resources/songs/groove.wav");
-        Song song3 = new Song("bassline", "Artist3", "MusicPlayer/src/resources/songs/bassline.wav", "MusicPlayer/src/resources/images/guitar-bass-icon.png");
-        Song song4 = new Song("happy", "Artist4", "MusicPlayer/src/resources/songs/happy.wav", "MusicPlayer/src/resources/images/tameimpalaitmightbetime.png");*/
+        //setting the lyrics
+        try {
+            InputStream inputStream = new FileInputStream("MusicPlayer/src/resources/lyrics/tameimpala.txt");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-        /*playlist1.getSongs().add(song1);
-        playlist1.getSongs().add(song2);
-        playlist1.getSongs().add(song3);
-        playlist1.getSongs().add(song4);
+            String line = bufferedReader.readLine();
+            StringBuilder stringBuilder = new StringBuilder();
 
-        songTableModel.addRow(new Object[]{song1.getId() + 1, song1.getName(), song1.getArtist()});
-        songTableModel.addRow(new Object[]{song2.getId() + 1, song2.getName(), song2.getArtist()});
-        songTableModel.addRow(new Object[]{song3.getId() + 1, song3.getName(), song3.getArtist()});
-        songTableModel.addRow(new Object[]{song4.getId() + 1, song4.getName(), song4.getArtist()});*/
+            while (line != null) {
+                stringBuilder.append(line).append("\n");
+                line = bufferedReader.readLine();
+            }
 
+            String lyrics = stringBuilder.toString();
+            lyricsTextArea.setText(lyrics);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         songTable.setBounds(30, 40, 200, 300);
         songTable.setDefaultEditor(Object.class, null);
         songTable.setFont(new Font("", Font.PLAIN, 24));
         songTable.setRowHeight(40);
+        songTable.setBorder(border);
         JScrollPane songTableScrollPane = new JScrollPane(songTable);
         songTableScrollPane.setPreferredSize(new Dimension(1100, 800));
 
         lyricsScrollPane = new JScrollPane(lyricsTextArea);
         lyricsScrollPane.setPreferredSize(new Dimension(300, 600));
 
+        volumeSlider.setValue(100);
 
         JPanel panel1 = new JPanel();
         JPanel panel2 = new JPanel();
         JPanel panel3 = new JPanel();
         JPanel panel4 = new JPanel();
+        JPanel panel4_1 = new JPanel();
+        JPanel panel4_2 = new JPanel();
         JPanel panel5 = new JPanel();
         panel1.setLayout(new BorderLayout(15, 15));
         panel2.setLayout(new BorderLayout(15, 15));
         panel3.setLayout(new BorderLayout(15, 15));
-        panel4.setLayout(new FlowLayout());
+        panel4.setLayout(new BorderLayout(15,15));
+        panel4_1.setLayout(new FlowLayout());
+        panel4_2.setLayout(new BorderLayout(15,15));
         panel5.setLayout(new BorderLayout(15, 15));
-        panel1.add(addButton, BorderLayout.WEST);
+
+        //panel1.setPreferredSize(new Dimension(0,50  ));
+
+        //panel1.add(addButton, BorderLayout.WEST);
+        panel1.add(status, BorderLayout.WEST);
         panel1.add(currentPlaylistLabel, BorderLayout.CENTER);
-        panel1.add(removeButton, BorderLayout.EAST);
-        panel2.add(libraryList, BorderLayout.WEST);
+        //panel1.add(removeButton, BorderLayout.EAST);
+        panel2.add(libraryList);
+        panel2.add(playlistDescription, BorderLayout.SOUTH);
         panel3.add(songTableScrollPane, BorderLayout.CENTER);
-        panel4.add(currentSongLabel);
-        panel4.add(playButton);
-        panel4.add(prevButton);
-        panel4.add(nextButton);
-        panel4.add(stopButton);
+        panel4_2.add(seekBar, BorderLayout.NORTH);
+        panel4_2.add(volumeSlider, BorderLayout.EAST);
+        panel4_2.add(currentSongLabel, BorderLayout.WEST);
+        panel4_1.add(playButton);
+        panel4_1.add(prevButton);
+        panel4_1.add(nextButton);
+        panel4_1.add(stopButton);
+        panel4_1.add(fullscreenButton);
+        panel4.add(panel4_1, BorderLayout.SOUTH);
+        panel4.add(panel4_2, BorderLayout.NORTH);
         panel5.add(lyricsScrollPane, BorderLayout.NORTH);
         panel5.add(albumImage, BorderLayout.SOUTH);
-        panel5.add(status, BorderLayout.CENTER);
 
 
-        JFrame frame = new JFrame("Music Player");
-        frame.add(panel1, BorderLayout.NORTH);
-        frame.add(panel2, BorderLayout.WEST);
-        frame.add(panel3, BorderLayout.CENTER);
-        frame.add(panel5, BorderLayout.EAST);
-        frame.add(panel4, BorderLayout.SOUTH);
+        JFrame mainFrame = new JFrame("Music Player");
+        mainFrame.add(panel1, BorderLayout.NORTH);
+        mainFrame.add(panel2, BorderLayout.WEST);
+        mainFrame.add(panel3, BorderLayout.CENTER);
+        mainFrame.add(panel5, BorderLayout.EAST);
+        mainFrame.add(panel4, BorderLayout.SOUTH);
+
+
+        //JFrame fullscreenFrame = new JFrame("Fullscreen Player");
+        //fullscreenFrame.add(albumImage, BorderLayout.WEST);
+        //fullscreenFrame.add(lyricsScrollPane, BorderLayout.EAST);
+        //fullscreenFrame.add(panel4, BorderLayout.SOUTH);
+        //fullscreenFrame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        //fullscreenFrame.setVisible(true);
 
         //extra customization
         songTable.setGridColor(Color.black);
         ImageIcon image = new ImageIcon("MusicPlayer/src/resources/images/icon.png");
-        frame.setIconImage(image.getImage());
-        frame.setJMenuBar(menuBar);
+        mainFrame.setIconImage(image.getImage());
+        mainFrame.setJMenuBar(menuBar);
 
         //frame.setSize(1700, 900);
-        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
-        frame.setExtendedState(MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        mainFrame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        mainFrame.setExtendedState(MAXIMIZED_BOTH);
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setVisible(true);
     }
 
-    public void addSongListener(ActionListener actionListener) {
+    public void addSongToLibraryListener(ActionListener actionListener) {
         addButton.addActionListener(actionListener);
-        addSongItem.addActionListener(actionListener);
+        addSongToLibraryItem.addActionListener(actionListener);
+    }
+
+    public void addSongToPlaylistListener(ActionListener actionListener) {
+        addSongToPlaylistItem.addActionListener(actionListener);
     }
 
     public void addPlaylistListener(ActionListener actionListener) {
         addPlaylistItem.addActionListener(actionListener);
     }
 
-    public void removePlaylistListener(ActionListener actionListener) {
+    public void addRemovePlaylistListener(ActionListener actionListener) {
         removePlaylistItem.addActionListener(actionListener);
     }
 
-    public void addRemoveListener(ActionListener actionListener) {
+    public void addRemoveSongListener(ActionListener actionListener) {
         removeButton.addActionListener(actionListener);
         removeSongItem.addActionListener(actionListener);
     }
 
+    public void addEditPlaylistListener(ActionListener actionListener) {
+        editPlaylistItem.addActionListener(actionListener);
+    }
+
     public void addPlaySongListener(ActionListener actionListener) {
         playButton.addActionListener(actionListener);
+    }
+
+    public void addMouseListener(MouseAdapter mouseAdapter) {
+        songTable.addMouseListener(mouseAdapter);
     }
 
     public void addStopSongListener(ActionListener actionListener) {
@@ -265,6 +314,15 @@ public class MusicPlayerView extends JFrame {
         libraryList.addListSelectionListener(listSelectionListener);
     }
 
+    public void addVolumeListener(ChangeListener changeListener) {
+        volumeSlider.addChangeListener(changeListener);
+    }
+
+    public void addSeekbarListener(MouseAdapter mouseAdapter) {
+        seekBar.addMouseListener(mouseAdapter);
+    }
+
+
     /**
      * This method adds song to the table
      *
@@ -275,8 +333,7 @@ public class MusicPlayerView extends JFrame {
 
     public void addSongToTable(String title, String artist, String songPath) {
 
-        database.addSongToLibrary(title, artist, songPath);
-        updateSongTable();
+
     }
 
     /*public void addSongToLibrary(String title, String artist, String songPath) {
@@ -296,104 +353,31 @@ public class MusicPlayerView extends JFrame {
 
     public void removeSongFromPlaylist() {
 
-        int selectedRow = songTable.getSelectedRow();
-        System.out.println(selectedRow);
-
-        if (selectedRow == -1) {
-            System.out.println("no song selected");
-        } else {
-
-            database.removeSongFromPlaylist(currentPlaylist, playlistList, selectedRow + 1);
-            updateSongTable();
-
-        }
     }
 
 
-    /**
-     * This method calls the playSong method if a song
-     * is selected and the play button is pressed. If no
-     * song is pressed, the status message will inform the
-     * user.
-     */
     public void playButtonPressed() {
 
-        try {
-            int selectedRow = songTable.getSelectedRow();
-            Song song = currentPlaylist.getSongs().get(selectedRow);
-            playSong(song);
 
-        } catch (ArrayIndexOutOfBoundsException e) {
-            status.setText("Select a song to play!");
-        }
     }
 
-    /**
-     * This method plays the selected song. If a song
-     * is playing it will be stopped before the new song
-     * starts playing. If the song has album art, it will be
-     * displayed. Otherwise a default image will be displayed.
-     *
-     * @param song The selected song from the table
-     */
 
-    private void playSong(Song song) {
+    public void playSong(Song song) {
 
         //stops song if a song is currently playing
-        stopSong();
 
-        String songPath = song.getSongPath();
-        currentSong = song;
-        ImageIcon image;
-
-        if (song.getImagePath() != null) {
-            image = new ImageIcon(song.getImagePath());
-        }
-        //sets a default image if no image is set
-        else {
-            image = new ImageIcon("MusicPlayer/src/resources/images/defaultImage.png");
-        }
-        Image img1 = image.getImage();
-        Image img2 = img1.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
-        image = new ImageIcon(img2);
-        albumImage.setIcon(image);
-
-
-        Media hit = new Media(new File(songPath).toURI().toString());
-        mediaPlayer = new MediaPlayer(hit);
-        mediaPlayer.play();
-
-        currentSongLabel.setText("Now playing: " + song.getName() + " by " + song.getArtist());
-        songPlaying = true;
-        status.setText("");
     }
 
-    /**
-     * This method stops a song if a song is playing
-     */
+
     public void stopSong() {
 
-        if (songPlaying) {
-            mediaPlayer.stop();
-        }
+
     }
 
-    /**
-     * This method plays the next song in the playlist.
-     * If the current song is the last one in the playlist, the
-     * user will be informed and the current song keeps playing.
-     */
+
     public void nextSong() {
 
-        try {
-            if (songPlaying) {
-                Song nextSong = currentPlaylist.getSongs().get(currentSong.getId());
-                playSong(nextSong);
-                songTable.setRowSelectionInterval(nextSong.getId() - 1, nextSong.getId() - 1);
-            }
-        } catch (IndexOutOfBoundsException e) {
-            status.setText("Last song in playlist");
-        }
+
     }
 
     /**
@@ -403,15 +387,7 @@ public class MusicPlayerView extends JFrame {
      */
     public void prevSong() {
 
-        try {
-            if (songPlaying) {
-                Song prevSong = currentPlaylist.getSongs().get(currentSong.getId() - 2);
-                playSong(prevSong);
-                songTable.setRowSelectionInterval(prevSong.getId() - 1, prevSong.getId() - 1);
-            }
-        } catch (IndexOutOfBoundsException e) {
-            status.setText("First song in playlist");
-        }
+
     }
 
     /**
@@ -422,23 +398,6 @@ public class MusicPlayerView extends JFrame {
 
     public void changePlaylist() {
 
-        String selectedPlaylist = libraryList.getSelectedValue().toString();
-
-        for (Playlist playlist : playlistList) {
-            if (playlist.getPlaylistName().equals(selectedPlaylist)) {
-                currentPlaylist = playlist;
-                currentPlaylistLabel.setText(currentPlaylist.getPlaylistName());
-            }
-        }
-
-        for (int i = songTableModel.getRowCount() - 1; i > -1; i--) {
-            songTableModel.removeRow(i);
-        }
-        if (currentPlaylist.getSongs() != null) {
-            for (Song song : currentPlaylist.getSongs()) {
-                songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});
-            }
-        }
 
     }
 
@@ -446,18 +405,7 @@ public class MusicPlayerView extends JFrame {
      * This method updates the table, for example when
      * a song is removed or added to the current playlist.
      */
-    private void updateSongTable() {
 
-        database.updateTable(currentPlaylist);
-        for (int i = songTableModel.getRowCount() - 1; i > -1; i--) {
-            songTableModel.removeRow(i);
-        }
-
-        for (Song song : currentPlaylist.getSongs()) {
-            songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});
-        }
-
-    }
 
     /**
      * This method adds a playlist to the list of playlists.
@@ -467,8 +415,6 @@ public class MusicPlayerView extends JFrame {
      * @param description Description of the playlist, optional
      */
     public void addPlaylist(String name, String description) {
-        Playlist playlist = database.addPlaylist(name, description, playlistList);
-        libraryListModel.addElement(playlist.getPlaylistName());
 
     }
 
@@ -479,15 +425,6 @@ public class MusicPlayerView extends JFrame {
      */
     public void removePlaylist() {
 
-        int selectedPlaylist = libraryList.getSelectedIndex();
-        int playlistID = playlistList.get(selectedPlaylist).getPlaylistID();
-
-        if (selectedPlaylist == 0) {
-            status.setText("Can't delete library!");
-        } else {
-            database.removePlaylist(playlistID);
-            System.out.println(playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
-        }
 
     }
 }
