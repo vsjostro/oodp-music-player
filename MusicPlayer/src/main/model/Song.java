@@ -18,6 +18,7 @@ public class Song {
     private String artist;
     private String songPath;
     private String imagePath;
+    private String lyricsPath;
     private APIDetails apiDetails;
 
 
@@ -40,12 +41,13 @@ public class Song {
      * @param songPath  The path where the song file is located
      * @param imagePath The path where the art for the song is located
      */
-    public Song(int id, String name, String artist, String songPath, String imagePath) {
+    public Song(int id, String name, String artist, String songPath, String imagePath, String lyrics) {
         this.name = name;
         this.artist = artist;
         this.songPath = songPath;
         this.id = id;
         this.imagePath = imagePath;
+        this.lyricsPath = lyrics;
     }
 
     /**
@@ -111,4 +113,7 @@ public class Song {
         return imagePath;
     }
 
+    public String getLyricsPath() {
+        return lyricsPath;
+    }
 }

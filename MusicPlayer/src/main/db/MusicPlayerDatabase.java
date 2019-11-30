@@ -25,6 +25,7 @@ public class MusicPlayerDatabase {
     public MusicPlayerDatabase(MusicPlayerView view) {
         this.view = view;
     }
+
     public MusicPlayerDatabase() {
 
     }
@@ -199,11 +200,18 @@ public class MusicPlayerDatabase {
             c = DriverManager.getConnection("jdbc:sqlite:musicplayer.db");
 
             stmt = c.createStatement();
-            rs = stmt.executeQuery("SELECT COUNT(*) AS amount FROM PLAYLIST_SONGS WHERE PLAYLIST_ID='"+playlist.getPlaylistID()+"';");
+            rs = stmt.executeQuery("SELECT COUNT(*) AS amount FROM PLAYLIST_SONGS WHERE PLAYLIST_ID='" + playlist.getPlaylistID() + "';");
             int songInPlaylist = rs.getInt("amount") + 1;
 
-            stmt.executeUpdate("INSERT INTO PLAYLIST_SONGS (PLAYLIST_ID, SONG_ID, SONG_IN_PLAYLIST_ID) VALUES " +
-                    "('"+playlist.getPlaylistID()+"','" + song.getId() + "','" + songInPlaylist + "')");
+            rs = stmt.executeQuery("SELECT SONG_ID FROM PLAYLIST_SONGS WHERE PLAYLIST_ID='" + playlist.getPlaylistID() + "' AND SONG_ID='" + song.getId() + "';");
+
+            if (!rs.next()) {
+                stmt.executeUpdate("INSERT INTO PLAYLIST_SONGS (PLAYLIST_ID, SONG_ID, SONG_IN_PLAYLIST_ID) VALUES " +
+                        "('" + playlist.getPlaylistID() + "','" + song.getId() + "','" + songInPlaylist + "')");
+            } else {
+                view.status.setText("Song already in playlist");
+            }
+
 
             stmt.close();
             c.close();
@@ -251,7 +259,7 @@ public class MusicPlayerDatabase {
                 playlist = new Playlist(id, name, desc, isLibrary);
                 playlists.add(playlist);
 
-                System.out.println(playlist.getPlaylistName() + " added");
+                //System.out.println(playlist.getPlaylistName() + " added");
             }
             rs.close();
             stmt.close();
@@ -259,7 +267,7 @@ public class MusicPlayerDatabase {
             for (Playlist ps : playlists) {
                 //add songs
                 stmt = c.createStatement();
-                rs = stmt.executeQuery("SELECT PLAYLIST_SONGS.SONG_IN_PLAYLIST_ID, SONGS.SONG_NAME, SONGS.ARTIST, SONGS.FILE_PATH, SONGS.ARTWORK_PATH FROM SONGS\n" +
+                rs = stmt.executeQuery("SELECT PLAYLIST_SONGS.SONG_IN_PLAYLIST_ID, SONGS.SONG_NAME, SONGS.ARTIST, SONGS.FILE_PATH, SONGS.ARTWORK_PATH, SONGS.LYRICS_PATH FROM SONGS\n" +
                         "INNER JOIN PLAYLIST_SONGS ON SONGS.SONG_ID=PLAYLIST_SONGS.SONG_ID WHERE PLAYLIST_ID=" + ps.getPlaylistID());
                 songList = new ArrayList<>();
 
@@ -271,8 +279,9 @@ public class MusicPlayerDatabase {
                     String file_path = rs.getString("FILE_PATH");
                     String artwork_path = rs.getString("ARTWORK_PATH");
                     String artist = rs.getString("ARTIST");
+                    String lyrics_path = rs.getString("LYRICS_PATH");
 
-                    Song song = new Song(id, name, artist, file_path, artwork_path);
+                    Song song = new Song(id, name, artist, file_path, artwork_path, lyrics_path);
 
                     songList.add(song);
                 }
@@ -304,7 +313,7 @@ public class MusicPlayerDatabase {
             Class.forName("org.sqlite.JDBC");
             c = DriverManager.getConnection("jdbc:sqlite:musicplayer.db");
             stmt = c.createStatement();
-            rs = stmt.executeQuery("SELECT PLAYLIST_SONGS.SONG_IN_PLAYLIST_ID, SONGS.SONG_NAME, SONGS.ARTIST, SONGS.FILE_PATH, SONGS.ARTWORK_PATH FROM SONGS\n" +
+            rs = stmt.executeQuery("SELECT PLAYLIST_SONGS.SONG_IN_PLAYLIST_ID, SONGS.SONG_NAME, SONGS.ARTIST, SONGS.FILE_PATH, SONGS.ARTWORK_PATH, SONGS.LYRICS_PATH FROM SONGS\n" +
                     "INNER JOIN PLAYLIST_SONGS ON SONGS.SONG_ID=PLAYLIST_SONGS.SONG_ID WHERE PLAYLIST_ID=" + playlistID);
             songList = new ArrayList<>();
 
@@ -315,8 +324,9 @@ public class MusicPlayerDatabase {
                 String artist = rs.getString("ARTIST");
                 String file_path = rs.getString("FILE_PATH");
                 String artwork_path = rs.getString("ARTWORK_PATH");
+                String lyrics_path = rs.getString("LYRICS_PATH");
 
-                Song song = new Song(id, name, artist, file_path, artwork_path);
+                Song song = new Song(id, name, artist, file_path, artwork_path,lyrics_path);
 
                 songList.add(song);
             }

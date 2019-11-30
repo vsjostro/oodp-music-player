@@ -19,9 +19,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * The controller for the application. Handles the events when buttons
@@ -53,9 +54,14 @@ public class MusicPlayerController {
         view.addStopSongListener(new StopSongListener());
         view.addNextSongListener(new NextSongListener());
         view.addPrevSongListener(new PrevSongListener());
+        view.addShuffleListener(new ShuffleListener());
+        view.addLoopListener(new LoopListener());
+        view.addFavoriteListener(new FavoriteListener());
+        view.addFullscreenListener(new FullscreenListener());
         view.addListEventListener(new ListEventListener());
         view.addVolumeListener(new VolumeChangeListener());
         view.addSeekbarListener(new SeekbarListener());
+        view.addSearchListener(new SearchListener());
 
     }
 
@@ -116,7 +122,7 @@ public class MusicPlayerController {
             int playlistID = view.playlistList.get(selectedPlaylist).getPlaylistID();
 
             if (selectedPlaylist == 0 || selectedPlaylist == 1) {
-                view.status.setText("Can't delete library!");
+                view.status.setText("Can't delete library or favorites!");
             } else {
                 database.removePlaylist(playlistID);
                 System.out.println(view.playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
@@ -212,17 +218,10 @@ public class MusicPlayerController {
          */
         @Override
         public void actionPerformed(ActionEvent e) {
-            try {
-                if (view.songPlaying) {
-                    Song nextSong = view.currentPlaylist.getSongs().get(view.currentSong.getId());
-                    playSong(nextSong);
-                    view.songTable.setRowSelectionInterval(nextSong.getId() - 1, nextSong.getId() - 1);
-                }
-            } catch (IndexOutOfBoundsException ie) {
-                view.status.setText("Last song in playlist");
-            }
+            nextSong();
         }
     }
+
 
     class PrevSongListener implements ActionListener {
 
@@ -298,6 +297,7 @@ public class MusicPlayerController {
         String songPath = song.getSongPath();
         view.currentSong = song;
         ImageIcon image;
+        String lyrics;
 
         if (song.getImagePath() != null) {
             image = new ImageIcon(song.getImagePath());
@@ -310,6 +310,30 @@ public class MusicPlayerController {
         Image img2 = img1.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
         image = new ImageIcon(img2);
         view.albumImage.setIcon(image);
+
+        try {
+            if (song.getLyricsPath() != null) {
+                InputStream inputStream = new FileInputStream(song.getLyricsPath());
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line = bufferedReader.readLine();
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while (line != null) {
+                    stringBuilder.append(line).append("\n");
+                    line = bufferedReader.readLine();
+                }
+
+                lyrics = stringBuilder.toString();
+            } else {
+                lyrics = "";
+            }
+
+            view.lyricsTextArea.setText(lyrics);
+            view.lyricsTextArea.setCaretPosition(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         Media hit = new Media(new File(songPath).toURI().toString());
@@ -333,10 +357,15 @@ public class MusicPlayerController {
                     e.printStackTrace();
                 }
 
+
                 Duration songDuration = hit.getDuration();
                 Duration currentTime = view.mediaPlayer.getCurrentTime();
                 DecimalFormat df = new DecimalFormat("#0");
 
+
+                if (songDuration.equals(currentTime)) {
+                    nextSong();
+                }
 
                 int time = (int) (currentTime.toSeconds() / songDuration.toSeconds() * 100);
 
@@ -357,7 +386,6 @@ public class MusicPlayerController {
                 }
 
                 //System.out.println(songDuration.toSeconds());
-                view.seekBar.setStringPainted(true);
                 view.seekBar.setString(min + ":" + sec + "/" + songTime);
                 view.seekBar.setValue(time);
                 //view.seekBar.setString(df.format(currentTime.toMinutes())  + "/" + df.format(songDuration.toMinutes()));
@@ -374,6 +402,37 @@ public class MusicPlayerController {
     private void stopSong() {
         view.mediaPlayer.stop();
         view.songPlaying = false;
+    }
+
+
+    private void nextSong() {
+        try {
+            if (view.songPlaying) {
+                Song nextSong;
+
+
+                if (view.shuffleToggled) {
+
+                    Random rand = new Random();
+                    int randomId = rand.nextInt(view.currentPlaylist.getSongs().size());
+                    nextSong = view.currentPlaylist.getSongs().get(randomId);
+
+                } else {
+                    nextSong = view.currentPlaylist.getSongs().get(view.currentSong.getId());
+                }
+                playSong(nextSong);
+                view.songTable.setRowSelectionInterval(nextSong.getId() - 1, nextSong.getId() - 1);
+            }
+        } catch (IndexOutOfBoundsException ie) {
+            if (view.loopToggled) {
+                Song song = view.currentPlaylist.getSongs().get(0);
+                playSong(song);
+                view.songTable.setRowSelectionInterval(song.getId() - 1, song.getId() - 1);
+            } else {
+                view.status.setText("Last song in playlist");
+            }
+            //stopSong();
+        }
     }
 
     private class DoubleClickListener extends MouseAdapter {
@@ -449,7 +508,90 @@ public class MusicPlayerController {
 
             view.mediaPlayer.seek(newDuration);
 
-            view.seekBar.setValue(seekbarVal);
+            //view.seekBar.setValue(seekbarVal);
+
+        }
+    }
+
+    private class FullscreenListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            if (!view.fullscreen) {
+
+
+                view.panel1.setVisible(false);
+                view.panel2.setVisible(false);
+                view.panel3.setVisible(false);
+
+                view.lyricsScrollPane.setPreferredSize(new Dimension(600, 600));
+                view.albumImage.setPreferredSize(new Dimension(500, 500));
+
+                view.fullscreen = true;
+            } else {
+                view.panel1.setVisible(true);
+                view.panel2.setVisible(true);
+                view.panel3.setVisible(true);
+                view.lyricsScrollPane.setPreferredSize(new Dimension(300, 500));
+                view.albumImage.setPreferredSize(new Dimension(300, 300));
+                view.fullscreen = false;
+            }
+
+        }
+    }
+
+
+    private class ShuffleListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.shuffleToggled = !view.shuffleToggled;
+        }
+    }
+
+    private class LoopListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.loopToggled = !view.loopToggled;
+        }
+    }
+
+    private class FavoriteListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (view.songTable.getSelectedRow() == -1) {
+                view.status.setText("Select a song first!");
+
+            } else {
+                view.status.setText("Song added to favorites");
+                database.addSongToPlaylist(view.currentPlaylist.getSongs().get(view.songTable.getSelectedRow()), view.playlistList.get(1));
+            }
+
+        }
+    }
+
+    private class SearchListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            ArrayList<Song> songList = new ArrayList<>();
+            Playlist library = view.playlistList.get(0);
+            String searchText = view.searchField.getText().toLowerCase();
+
+            for (Song song : library.getSongs()) {
+                if (song.getName().toLowerCase().contains(searchText) || song.getArtist().toLowerCase().contains(searchText)) {
+                    songList.add(song);
+                }
+            }
+
+            for (int i = view.songTableModel.getRowCount() - 1; i > -1; i--) {
+                view.songTableModel.removeRow(i);
+            }
+
+            for (Song foundSong : songList) {
+                view.songTableModel.addRow(new Object[]{foundSong.getId(), foundSong.getName(), foundSong.getArtist()});
+            }
+
 
         }
     }
