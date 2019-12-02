@@ -8,8 +8,12 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /** A class that handles API requests and information gathering from
  *  the APIs used. This class is used to get information about a given
@@ -35,8 +39,11 @@ public class APIDetails {
     /** Private String object that contains the url of a big version of the song's album artwork */
     private String bigAlbumArtURL;
 
-    /** Private String object that contains the lyrics of the song */
-    private String songLyrics;
+    /** Private String object that contains the path to the lyrics of the song */
+    private String songLyricsPath;
+
+    /** Private String object that contains the path to the album artwork of the song */
+    private String albumArtPath;
 
 
     /** The constructor for the API details object. This takes in a String, "userInput",
@@ -51,7 +58,7 @@ public class APIDetails {
         this.artistName = apiDetails[1];
         this.smallAlbumArtURL = apiDetails[2];
         this.bigAlbumArtURL = apiDetails[3];
-        this.songLyrics = extractLyrics(this.songName, this.artistName,
+        this.songLyricsPath = extractLyrics(this.songName, this.artistName,
                 "Fpdwsgm7gI_ma2g6KbXe6oLGpSTvU1VG2qWQaBMRXQ8HSeYVLSeWH9L4bqrvPGvI");
     }
 
@@ -65,7 +72,7 @@ public class APIDetails {
      */
     // MAKE SURE TO PASS IN USER INPUT STRING
     private String[] getAPIDetails(String userInput) throws UnirestException {
-        String[] apiDetails = new String[4];
+        String[] apiDetails = new String[5];
 
         try {
             HttpResponse<String> response = getHTTPResponse(userInput);
@@ -78,6 +85,8 @@ public class APIDetails {
             apiDetails[1] = extractArtistName(song);
             apiDetails[2] = extractSmallArtURL(song);
             apiDetails[3] = extractBigArtURL(song);
+            apiDetails[4] = extractBigArtURL(song);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -122,12 +131,12 @@ public class APIDetails {
     }
 
     /**
-     * Getter method for the songLyrics field.
+     * Getter method for the songLyricsPath field.
      *
-     * @return String songLyrics
+     * @return String songLyricsPath
      * */
-    public String getSongLyrics() {
-        return this.songLyrics;
+    public String getSongLyricsPath() {
+        return this.songLyricsPath;
     }
 
     /**
@@ -250,6 +259,16 @@ public class APIDetails {
         return song.get("song_art_image_url").toString();
     }
 
+    private String getAlbumArtPath(String bigAlbumArtURL) {
+        try(InputStream in = new URL(bigAlbumArtURL).openStream()){
+            Files.copy(in, Paths.get("./MusicPlayer/src/resources/images/cat.jpg"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     /**
      * Method to get the song lyrics from the API response. Checks what operating system the program
      * is running on and executes a program to parse for the lyrics accordingly. Takes in the song name
@@ -262,11 +281,16 @@ public class APIDetails {
      * */
     private String extractLyrics(String songName, String artistName, String clientAccessToken) throws Exception {
         String line;
-        StringBuilder lyrics = new StringBuilder();
-        lyrics.append(songName);
-        lyrics.append(" by ");
-        lyrics.append(artistName);
-        lyrics.append("\n\n");
+
+        String fileName = songName + artistName + ".txt";
+        fileName = fileName.replace(' ', '_');
+        fileName = fileName.replace("\"", "");
+
+        PrintWriter writer = new PrintWriter("./MusicPlayer/src/resources/lyrics/" + fileName, "UTF-8");
+//        writer.write(songName);
+//        writer.write(" by ");
+//        writer.write(artistName);
+//        writer.write("\n\n");
 
         try {
             String os = System.getProperty("os.name").toLowerCase();
@@ -285,9 +309,11 @@ public class APIDetails {
                 stdInput.readLine();
 
                 while ((line = stdInput.readLine()) != null) {
-                    lyrics.append(line);
-                    lyrics.append("\n");
+                    writer.write(line);
+                    writer.write("\n");
                 }
+                writer.close();
+
             }
             else if (os.contains("windows")) {
                 Process process = Runtime.getRuntime().exec(new String[]{
@@ -303,14 +329,15 @@ public class APIDetails {
                 stdInput.readLine();
 
                 while ((line = stdInput.readLine()) != null) {
-                    lyrics.append(line);
-                    lyrics.append("\n");
+                    writer.write(line);
+                    writer.write("\n");
                 }
+                writer.close();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return lyrics.toString();
+        return fileName;
     }
 }
