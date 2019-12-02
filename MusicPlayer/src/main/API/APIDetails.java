@@ -58,6 +58,7 @@ public class APIDetails {
         this.artistName = apiDetails[1];
         this.smallAlbumArtURL = apiDetails[2];
         this.bigAlbumArtURL = apiDetails[3];
+        this.albumArtPath = apiDetails[4];
         this.songLyricsPath = extractLyrics(this.songName, this.artistName,
                 "Fpdwsgm7gI_ma2g6KbXe6oLGpSTvU1VG2qWQaBMRXQ8HSeYVLSeWH9L4bqrvPGvI");
     }
@@ -85,7 +86,7 @@ public class APIDetails {
             apiDetails[1] = extractArtistName(song);
             apiDetails[2] = extractSmallArtURL(song);
             apiDetails[3] = extractBigArtURL(song);
-            apiDetails[4] = extractBigArtURL(song);
+            apiDetails[4] = getAlbumArtPath(apiDetails[3]);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -260,13 +261,17 @@ public class APIDetails {
     }
 
     private String getAlbumArtPath(String bigAlbumArtURL) {
-        try(InputStream in = new URL(bigAlbumArtURL).openStream()){
-            Files.copy(in, Paths.get("./MusicPlayer/src/resources/images/cat.jpg"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String fileName = songName + artistName + ".jpg";
+        fileName = fileName.replace(' ', '_');
+        fileName = fileName.replace("\"", "");
 
-        return null;
+//        try(InputStream in = new URL(bigAlbumArtURL).openStream()){
+//            Files.copy(in, Paths.get("./MusicPlayer/src/resources/images/" + fileName));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        return fileName;
     }
 
     /**
@@ -317,7 +322,7 @@ public class APIDetails {
             }
             else if (os.contains("windows")) {
                 Process process = Runtime.getRuntime().exec(new String[]{
-                        "./MusicPlayer/src/main/API/dist/lyricParser",
+                        "./MusicPlayer/src/main/API/dist/lyricParser.exe",
                         songName, artistName, clientAccessToken});
                 process.waitFor();
 
