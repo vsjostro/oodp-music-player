@@ -9,11 +9,9 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 import java.io.*;
-
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /** A class that handles API requests and information gathering from
  *  the APIs used. This class is used to get information about a given
@@ -39,7 +37,7 @@ public class APIDetails {
     /** Private String object that contains the url of a big version of the song's album artwork */
     private String bigAlbumArtURL;
 
-    /** Private String object that contains the path to the lyrics of the song */
+    /** Private String object that contains the path to the lyrics file for the song */
     private String songLyricsPath;
 
     /** Private String object that contains the path to the album artwork of the song */
@@ -86,7 +84,12 @@ public class APIDetails {
             apiDetails[1] = extractArtistName(song);
             apiDetails[2] = extractSmallArtURL(song);
             apiDetails[3] = extractBigArtURL(song);
-            apiDetails[4] = getAlbumArtPath(apiDetails[3]);
+
+            String songName = apiDetails[0];
+            String artistName = apiDetails[1];
+            String bigArtURL = apiDetails[3];
+
+            apiDetails[4] = getAlbumArtPath(songName, artistName, bigArtURL);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -260,25 +263,40 @@ public class APIDetails {
         return song.get("song_art_image_url").toString();
     }
 
-    private String getAlbumArtPath(String bigAlbumArtURL) {
+
+    private String getAlbumArtPath(String songName, String artistName, String bigAlbumArtURL) throws IOException {
         String fileName = songName + artistName + ".jpg";
         fileName = fileName.replace(' ', '_');
         fileName = fileName.replace("\"", "");
 
-//        try(InputStream in = new URL(bigAlbumArtURL).openStream()){
-//            Files.copy(in, Paths.get("./MusicPlayer/src/resources/images/" + fileName));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        URL url = new URL(bigAlbumArtURL.replace("\"", ""));
+        HttpURLConnection httpcon = (HttpURLConnection) url.openConnection();
+        httpcon.addRequestProperty("User-Agent", "Mozilla/4.76");
 
-        return fileName;
+        InputStream in = new BufferedInputStream(httpcon.getInputStream());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        int n = 0;
+        while (-1!=(n=in.read(buf)))
+        {
+            out.write(buf, 0, n);
+        }
+        out.close();
+        in.close();
+        byte[] response = out.toByteArray();
+
+        FileOutputStream fos = new FileOutputStream("./MusicPlayer/src/resources/images/" + fileName);
+        fos.write(response);
+        fos.close();
+
+        return "./MusicPlayer/src/resources/images/" + fileName;
     }
 
     /**
-     * Method to get the song lyrics from the API response. Checks what operating system the program
+     * Method to get the song lyrics path from the API response. Checks what operating system the program
      * is running on and executes a program to parse for the lyrics accordingly. Takes in the song name
      * and artist name, as well as the accessToken for the API to get the lyrics and returns a String
-     * containing the lyrics.
+     * containing the path to the lyrics txt file.
      *
      * @param String songName, String artistName, String clientAccessToken
      *
@@ -343,6 +361,6 @@ public class APIDetails {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return fileName;
+        return "./MusicPlayer/src/resources/lyrics/" + fileName;
     }
 }

@@ -1,14 +1,18 @@
 package main.API;
 
-import java.io.InputStream;
-import java.io.PrintWriter;
+import javax.imageio.ImageIO;
+import javax.net.ssl.HttpsURLConnection;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Driver {
     public static void main(String[] args) throws Exception {
-        String userInput = "africa toto";
+        String userInput = "mind mischief tame impala";
 //        Song song = new Song(userInput);
 
         APIDetails songAPIDetails = new APIDetails(userInput);
@@ -17,10 +21,18 @@ public class Driver {
 //        LyricWindow lw = new LyricWindow(lyrics);
 //        lw.makeLyricWindow(lyrics);
 
-
-//        try(InputStream in = new URL("https://i.ytimg.com/vi/pjRs_WT8VzM/maxresdefault.jpg").openStream()){
-//            Files.copy(in, Paths.get("./MusicPlayer/src/resources/images/cat.jpg"));
+//        URL url = new URL("http://www.yahoo.com/image_to_read.jpg");
+//        InputStream in = new BufferedInputStream(url.openStream());
+//        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        byte[] buf = new byte[1024];
+//        int n = 0;
+//        while (-1!=(n=in.read(buf)))
+//        {
+//            out.write(buf, 0, n);
 //        }
+//        out.close();
+//        in.close();
+//        byte[] response = out.toByteArray();
 
 
     }
