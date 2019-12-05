@@ -323,7 +323,10 @@ public class APIDetails {
         fileName = fileName.replace(' ', '_');
         fileName = fileName.replace("\"", "");
 
-        PrintWriter writer = new PrintWriter("/lyrics/" + fileName, "UTF-8");
+        final ClassLoader loader = APIDetails.class.getClassLoader();
+        String path = loader.getResource("resources/lyrics").getPath();
+
+        PrintWriter writer = new PrintWriter(path + '/' + fileName, "UTF-8");
 
         try {
             String os = System.getProperty("os.name").toLowerCase();
