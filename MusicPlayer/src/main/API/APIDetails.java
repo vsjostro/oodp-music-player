@@ -10,7 +10,6 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /** A class that handles API requests and information gathering from
@@ -51,14 +50,23 @@ public class APIDetails {
      */
     public APIDetails(String userInput) throws Exception {
         String[] apiDetails = getAPIDetails(userInput);
-
-        this.songName = apiDetails[0];
-        this.artistName = apiDetails[1];
-        this.smallAlbumArtURL = apiDetails[2];
-        this.bigAlbumArtURL = apiDetails[3];
-        this.albumArtPath = apiDetails[4];
-        this.songLyricsPath = extractLyrics(this.songName, this.artistName,
-                "Fpdwsgm7gI_ma2g6KbXe6oLGpSTvU1VG2qWQaBMRXQ8HSeYVLSeWH9L4bqrvPGvI");
+        if (apiDetails == null) {
+            this.songName = null;
+            this.artistName = null;
+            this.smallAlbumArtURL = null;
+            this.bigAlbumArtURL = null;
+            this.albumArtPath = null;
+            this.songLyricsPath = null;
+        }
+        else {
+            this.songName = apiDetails[0];
+            this.artistName = apiDetails[1];
+            this.smallAlbumArtURL = apiDetails[2];
+            this.bigAlbumArtURL = apiDetails[3];
+            this.albumArtPath = apiDetails[4];
+            this.songLyricsPath = extractLyrics(this.songName, this.artistName,
+                    "Fpdwsgm7gI_ma2g6KbXe6oLGpSTvU1VG2qWQaBMRXQ8HSeYVLSeWH9L4bqrvPGvI");
+        }
     }
 
     /** Method to drive the creation and collection of the fields required for the constructor.
@@ -77,6 +85,10 @@ public class APIDetails {
             HttpResponse<String> response = getHTTPResponse(userInput);
 
             // CHECK FOR NULL RESPONSE
+            if (response == null) {
+                return null;
+            }
+
             JsonObject jobject = createJSONObject(response);
             JsonObject song = getSongObject(jobject);
 
@@ -133,6 +145,8 @@ public class APIDetails {
     public String getBigAlbumArtURL() {
         return this.bigAlbumArtURL;
     }
+
+    public String getAlbumArtPath() { return this.albumArtPath; }
 
     /**
      * Getter method for the songLyricsPath field.
@@ -309,11 +323,7 @@ public class APIDetails {
         fileName = fileName.replace(' ', '_');
         fileName = fileName.replace("\"", "");
 
-        PrintWriter writer = new PrintWriter("./MusicPlayer/src/resources/lyrics/" + fileName, "UTF-8");
-//        writer.write(songName);
-//        writer.write(" by ");
-//        writer.write(artistName);
-//        writer.write("\n\n");
+        PrintWriter writer = new PrintWriter("/lyrics/" + fileName, "UTF-8");
 
         try {
             String os = System.getProperty("os.name").toLowerCase();
@@ -361,6 +371,6 @@ public class APIDetails {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "./MusicPlayer/src/resources/lyrics/" + fileName;
+        return "/lyrics/" + fileName;
     }
 }
