@@ -278,7 +278,7 @@ public class APIDetails {
     }
 
 
-    private String getAlbumArtPath(String songName, String artistName, String bigAlbumArtURL) throws IOException {
+    public String getAlbumArtPath(String songName, String artistName, String bigAlbumArtURL) throws IOException {
         String fileName = songName + artistName + ".jpg";
         fileName = fileName.replace(' ', '_');
         fileName = fileName.replace("\"", "");

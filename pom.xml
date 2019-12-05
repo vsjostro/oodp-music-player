@@ -11,6 +11,21 @@
     <build>
         <plugins>
             <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+                <finalName>MusicPlayer</finalName>
+                <appendAssemblyId>false</appendAssemblyId>
+                <archive>
+                    <manifest>
+                        <mainClass>main.MusicPlayer</mainClass>
+                    </manifest>
+                </archive>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -22,12 +37,12 @@
     </build>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/com.miglayout/miglayout &ndash;&gt;
         <dependency>
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout</artifactId>
             <version>3.7.4</version>
-        </dependency>
+        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
         <dependency>
@@ -36,7 +51,7 @@
             <version>3.28.0</version>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>com.weblookandfeel</groupId>
             <artifactId>weblaf-ui</artifactId>
             <version>1.2.10</version>
@@ -52,7 +67,7 @@
             <groupId>io.github.vincenzopalazzo</groupId>
             <artifactId>material-ui-swing</artifactId>
             <version>1.0.0</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>

@@ -4,7 +4,6 @@ import javafx.scene.media.MediaPlayer;
 import main.db.MusicPlayerDatabase;
 import main.model.Playlist;
 import main.model.Song;
-import net.miginfocom.swing.MigLayout;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -18,9 +17,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+
+//import net.miginfocom.swing.MigLayout;
 
 /**
  * MusicPlayerView handles all the GUI related things and also
@@ -185,9 +186,16 @@ public class MusicPlayerView extends JFrame {
         albumImage.setVerticalAlignment(JLabel.CENTER);
 
         try {
-            image = ImageIO.read(new File("MusicPlayer/src/resources/images/slowRush.png"));
+
+            URL file = getClass().getResource("/images/africa.jpg");
+
+            System.out.println(file.getPath());
+
+            image = ImageIO.read(file);
             Image img = image.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
             albumImage.setIcon(new ImageIcon(img));
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -262,7 +270,7 @@ public class MusicPlayerView extends JFrame {
         setBorderlayout();
         //setMigLayout();
 
-
+        System.out.println();
 
 
         //JFrame fullscreenFrame = new JFrame("Fullscreen Player");
@@ -339,7 +347,7 @@ public class MusicPlayerView extends JFrame {
     }
 
     //This layout is still a work in progress,
-    public void setMigLayout() {
+    /*public void setMigLayout() {
         JPanel panel = new JPanel(new MigLayout());
         JPanel controlPanel = new JPanel(new MigLayout());
         controlPanel.setBorder(border);
@@ -369,7 +377,7 @@ public class MusicPlayerView extends JFrame {
         mainFrame = new JFrame("Music Player");
         mainFrame.add(panel);
 
-    }
+    }*/
 
 
 

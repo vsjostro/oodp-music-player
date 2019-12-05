@@ -36,6 +36,11 @@ public class Playlist {
         this.isLibrary = isLibrary;
     }
 
+    //Empty constructor for searching purposes
+    public Playlist() {
+
+    }
+
     /**
      * Sets the playlist name, will be used when playlist name is edited
      *
