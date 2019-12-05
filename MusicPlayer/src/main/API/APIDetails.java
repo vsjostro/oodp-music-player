@@ -377,6 +377,8 @@ public class APIDetails {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "/lyrics/" + fileName;
+
+
+        return path + "/" + fileName;
     }
 }
