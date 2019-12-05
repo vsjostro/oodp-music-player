@@ -299,7 +299,10 @@ public class APIDetails {
         in.close();
         byte[] response = out.toByteArray();
 
-        FileOutputStream fos = new FileOutputStream("./MusicPlayer/src/resources/images/" + fileName);
+        final ClassLoader loader = APIDetails.class.getClassLoader();
+        String path = loader.getResource("resources/images").getPath();
+
+        FileOutputStream fos = new FileOutputStream(path + "/" + fileName);
         fos.write(response);
         fos.close();
 
