@@ -306,7 +306,7 @@ public class APIDetails {
         fos.write(response);
         fos.close();
 
-        return "./MusicPlayer/src/resources/images/" + fileName;
+        return path + "/" + fileName;
     }
 
     /**
