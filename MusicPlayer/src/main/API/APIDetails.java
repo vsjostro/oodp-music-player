@@ -11,6 +11,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 
 /** A class that handles API requests and information gathering from
  *  the APIs used. This class is used to get information about a given
@@ -302,13 +303,23 @@ public class APIDetails {
         byte[] response = out.toByteArray();
 
         final ClassLoader loader = APIDetails.class.getClassLoader();
-        String path = loader.getResource("resources/images").getPath();
+        //String path = loader.getResource("resources/images").getPath();
 
-        FileOutputStream fos = new FileOutputStream(path + "/" + fileName);
+        String path = APIDetails.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        String decodedPath = URLDecoder.decode(path, "UTF-8");
+        if (decodedPath.contains("MusicPlayer.jar")) {
+            decodedPath = decodedPath.replace("MusicPlayer.jar", "classes/resources/images/");
+            System.out.println(decodedPath);
+        } else {
+            decodedPath = loader.getResource("resources/images").getPath();
+            System.out.println(decodedPath);
+        }
+
+        FileOutputStream fos = new FileOutputStream(decodedPath + "/" +  fileName);
         fos.write(response);
         fos.close();
 
-        return path + "/" + fileName;
+        return decodedPath + "/" + fileName;
     }
 
     /**
@@ -329,9 +340,20 @@ public class APIDetails {
         fileName = fileName.replace("\"", "");
 
         final ClassLoader loader = APIDetails.class.getClassLoader();
-        String path = loader.getResource("resources/lyrics").getPath();
+        //String path = loader.getResource("resources/lyrics").getPath();
 
-        PrintWriter writer = new PrintWriter(path + '/' + fileName, "UTF-8");
+        String path = APIDetails.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        String decodedPath = URLDecoder.decode(path, "UTF-8");
+        System.out.println(decodedPath);
+        if (decodedPath.contains("MusicPlayer.jar")){
+            decodedPath = decodedPath.replace("MusicPlayer.jar", "classes/resources/lyrics/");
+            System.out.println(decodedPath);
+        } else {
+            decodedPath = loader.getResource("resources/lyrics").getPath();
+            System.out.println(decodedPath);
+        }
+
+        PrintWriter writer = new PrintWriter(decodedPath + "/" + fileName, "UTF-8");
 
         try {
             String os = System.getProperty("os.name").toLowerCase();
@@ -363,16 +385,27 @@ public class APIDetails {
 
             }
             else if (os.contains("windows")) {
-                final ClassLoader execLoader = APIDetails.class.getClassLoader();
-                String execPath = execLoader.getResource("main/API/dist/lyricParser.exe").getPath();
+//                final ClassLoader execLoader = APIDetails.class.getClassLoader();
+//                String execPath = execLoader.getResource("main/API/dist/lyricsGeniusTest.exe").getPath();
 
-//                Process process = Runtime.getRuntime().exec(new String[]{
-//                        "./MusicPlayer/src/main/API/dist/lyricParser.exe",
-//                        songName, artistName, clientAccessToken});
-//                process.waitFor();
+                //final ClassLoader loader = APIDetails.class.getClassLoader();
+
+                path = APIDetails.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                String exePath = URLDecoder.decode(path, "UTF-8");
+                if (exePath.contains("MusicPlayer.jar")) {
+                    exePath = exePath.replace("MusicPlayer.jar", "classes/main/API/dist/lyricsGeniusTest.exe");
+                    System.out.println(exePath);
+                }else {
+                    exePath = loader.getResource("main/API/dist/lyricsGeniusTest.exe").getPath();
+                }
+
                 Process process = Runtime.getRuntime().exec(new String[]{
-                        execPath, songName, artistName, clientAccessToken});
+                        exePath,
+                        songName, artistName, clientAccessToken});
                 process.waitFor();
+                //Process process = Runtime.getRuntime().exec(new String[]{
+                //        execPath, songName, artistName, clientAccessToken});
+                //process.waitFor();
 
                 BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
@@ -392,6 +425,6 @@ public class APIDetails {
             e.printStackTrace();
         }
 
-        return path + "/" + fileName;
+        return decodedPath + "/" + fileName;
     }
 }
