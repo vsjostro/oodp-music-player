@@ -278,6 +278,8 @@ public class APIDetails {
     }
 
 
+    // TO-DO
+
     public String getAlbumArtPath(String songName, String artistName, String bigAlbumArtURL) throws IOException {
         String fileName = songName + artistName + ".jpg";
         fileName = fileName.replace(' ', '_');
@@ -335,9 +337,15 @@ public class APIDetails {
             String os = System.getProperty("os.name").toLowerCase();
 
             if (os.contains("mac")) {
+                final ClassLoader execLoader = APIDetails.class.getClassLoader();
+                String execPath = execLoader.getResource("main/API/dist/lyricParser").getPath();
+
+//                Process process = Runtime.getRuntime().exec(new String[]{
+//                        "./MusicPlayer/src/main/API/dist/lyricParser",
+//                        songName, artistName, clientAccessToken});
+//                process.waitFor();
                 Process process = Runtime.getRuntime().exec(new String[]{
-                        "./MusicPlayer/src/main/API/dist/lyricParser",
-                        songName, artistName, clientAccessToken});
+                        execPath, songName, artistName, clientAccessToken});
                 process.waitFor();
 
                 BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -355,9 +363,15 @@ public class APIDetails {
 
             }
             else if (os.contains("windows")) {
+                final ClassLoader execLoader = APIDetails.class.getClassLoader();
+                String execPath = execLoader.getResource("main/API/dist/lyricParser.exe").getPath();
+
+//                Process process = Runtime.getRuntime().exec(new String[]{
+//                        "./MusicPlayer/src/main/API/dist/lyricParser.exe",
+//                        songName, artistName, clientAccessToken});
+//                process.waitFor();
                 Process process = Runtime.getRuntime().exec(new String[]{
-                        "./MusicPlayer/src/main/API/dist/lyricParser.exe",
-                        songName, artistName, clientAccessToken});
+                        execPath, songName, artistName, clientAccessToken});
                 process.waitFor();
 
                 BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -377,7 +391,6 @@ public class APIDetails {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         return path + "/" + fileName;
     }
