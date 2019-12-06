@@ -90,7 +90,7 @@ public class MusicPlayerController {
                 }
                 if (value == JFileChooser.APPROVE_OPTION) {
 
-                    Thread apiFetch = new Thread(() -> {
+                    //Thread apiFetch = new Thread(() -> {
 
 
                         try {
@@ -106,19 +106,21 @@ public class MusicPlayerController {
                             System.out.println(artPath);
 
                             if (artPath == null) {
-                                artPath = "MusicPlayer/src/resources/images/defaultImage.png";
+                                artPath = getClass().getResource("/resources/images/defaultImage.png").getPath();
                             }
 
                             database.addSongToLibrary(songName, artist, songPath, lyricsPath, artPath);
                             updateSongTable();
                             view.addSongToTable(songName, artist, songPath);
+
+
                         } catch (Exception ex) {
 
                         }
 
 
-                    });
-                    apiFetch.start();
+                    //});
+                    //apiFetch.start();
 
 
                     /*String lyrics = songAPIDetails.getSongLyricsPath();
@@ -156,8 +158,6 @@ public class MusicPlayerController {
             } catch (NullPointerException np) {
 
             }
-
-
         }
     }
 
@@ -219,7 +219,7 @@ public class MusicPlayerController {
         public void actionPerformed(ActionEvent e) {
 
             int selectedRow = view.songTable.getSelectedRow();
-            System.out.println(selectedRow);
+            //System.out.println(selectedRow);
 
             if (selectedRow == -1) {
                 System.out.println("no song selected");
@@ -365,7 +365,7 @@ public class MusicPlayerController {
         }
         //sets a default image if no image is set
         else {
-            image = new ImageIcon("MusicPlayer/src/resources/images/defaultImage.png");
+            image = new ImageIcon(getClass().getResource("/resources/images/defaultImage.png"));
         }
         Image img1 = image.getImage();
         Image img2 = img1.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
@@ -374,7 +374,8 @@ public class MusicPlayerController {
 
         try {
             if (song.getLyricsPath() != null) {
-                InputStream inputStream = new FileInputStream(song.getLyricsPath());
+                System.out.println();
+                InputStream inputStream = new FileInputStream(new File(song.getLyricsPath()));
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
                 String line = bufferedReader.readLine();

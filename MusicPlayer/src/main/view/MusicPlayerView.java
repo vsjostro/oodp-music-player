@@ -187,7 +187,7 @@ public class MusicPlayerView extends JFrame {
 
         try {
 
-            URL file = getClass().getResource("/images/africa.jpg");
+            URL file = getClass().getResource("/resources/images/africa.jpg");
 
             System.out.println(file.getPath());
 
@@ -270,7 +270,6 @@ public class MusicPlayerView extends JFrame {
         setBorderlayout();
         //setMigLayout();
 
-        System.out.println();
 
 
         //JFrame fullscreenFrame = new JFrame("Fullscreen Player");
