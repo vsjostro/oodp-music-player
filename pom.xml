@@ -17,6 +17,7 @@
                 <appendAssemblyId>false</appendAssemblyId>
                 <archive>
                     <manifest>
+                        <addClasspath>true</addClasspath>
                         <mainClass>main.MusicPlayer</mainClass>
                     </manifest>
                 </archive>
@@ -37,12 +38,6 @@
     </build>
 
     <dependencies>
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/com.miglayout/miglayout &ndash;&gt;
-        <dependency>
-            <groupId>com.miglayout</groupId>
-            <artifactId>miglayout</artifactId>
-            <version>3.7.4</version>
-        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
         <dependency>

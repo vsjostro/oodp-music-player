@@ -21,7 +21,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -58,7 +57,6 @@ public class MusicPlayerController {
         view.addShuffleListener(new ShuffleListener());
         view.addLoopListener(new LoopListener());
         view.addFavoriteListener(new FavoriteListener());
-        view.addFullscreenListener(new FullscreenListener());
         view.addListEventListener(new ListEventListener());
         view.addVolumeListener(new VolumeChangeListener());
         view.addSeekbarListener(new SeekbarListener());
@@ -68,6 +66,7 @@ public class MusicPlayerController {
 
     class AddSongToLibraryListener implements ActionListener {
 
+
         public void actionPerformed(ActionEvent e) {
             try {
                 JFileChooser chooser = new JFileChooser();
@@ -76,61 +75,37 @@ public class MusicPlayerController {
                 chooser.setAcceptAllFileFilterUsed(false);
 
                 int value = chooser.showOpenDialog(null);
-                System.out.println(chooser.getSelectedFile().getPath());
                 String songPath = chooser.getSelectedFile().getPath();
                 String songName = JOptionPane.showInputDialog(null, "Enter song name");
                 String artist = JOptionPane.showInputDialog(null, "Enter artist name");
 
 
-                String[] songNameParsed = chooser.getSelectedFile().getName().split("\\.");
-                //String songName = songNameParsed[0];
-
                 if (songName.isEmpty()) {
-                    System.out.println("no title given");
+                    JOptionPane.showMessageDialog(null, "No title given!");
                 }
                 if (value == JFileChooser.APPROVE_OPTION) {
 
-                    //Thread apiFetch = new Thread(() -> {
+                    String input = songName + " " + artist;
+                    String lyricsPath = null;
+                    String artPath;
+                    System.out.println(input.toLowerCase());
 
+                    APIDetails songAPIDetails = new APIDetails(input);
 
-                        try {
-                            String input = songName + " " + artist;
-                            System.out.println(input.toLowerCase());
+                    if (songAPIDetails.getSongLyricsPath() != null) {
+                        lyricsPath = songAPIDetails.getSongLyricsPath();
+                        artPath = songAPIDetails.getAlbumArtPath();
 
-                            APIDetails songAPIDetails = new APIDetails(input);
-                            String lyricsPath = songAPIDetails.getSongLyricsPath();
-                            String artPath = songAPIDetails.getAlbumArtPath(songName, artist, songAPIDetails.getBigAlbumArtURL());
-                            ImageIcon image;
+                    } else {
+                        artPath = getClass().getResource("/resources/images/defaultImage.png").getPath();
+                    }
 
-                            System.out.println(lyricsPath);
-                            System.out.println(artPath);
-
-                            if (artPath == null) {
-                                artPath = getClass().getResource("/resources/images/defaultImage.png").getPath();
-                            }
-
-                            database.addSongToLibrary(songName, artist, songPath, lyricsPath, artPath);
-                            updateSongTable();
-                            view.addSongToTable(songName, artist, songPath);
-
-
-                        } catch (Exception ex) {
-
-                        }
-
-
-                    //});
-                    //apiFetch.start();
-
-
-                    /*String lyrics = songAPIDetails.getSongLyricsPath();
-                    System.out.println(lyrics);
-                    LyricWindow lw = new LyricWindow(lyrics);
-                    lw.makeLyricWindow(lyrics);*/
+                    database.addSongToLibrary(songName, artist, songPath, lyricsPath, artPath);
+                    updateSongTable();
 
                 }
-            } catch (NullPointerException n) {
-                System.out.println(n);
+            } catch (NullPointerException ignored) {
+
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -140,6 +115,11 @@ public class MusicPlayerController {
 
     class AddPlaylistListener implements ActionListener {
 
+        /**
+         * This method adds a playlist to the list of playlists.
+         * First it is added to the database and then to the list of playlists.
+         */
+
         @Override
         public void actionPerformed(ActionEvent e) {
 
@@ -148,14 +128,14 @@ public class MusicPlayerController {
                 String name = JOptionPane.showInputDialog(null, "Enter playlist name");
 
                 if (name.equals("")) {
-                    System.out.println("Playlist name cannot be empty");
+                    JOptionPane.showMessageDialog(null, "Playlist name cannot be empty");
                 } else {
                     String description = JOptionPane.showInputDialog(null, "Enter description (optional)");
                     Playlist playlist = database.addPlaylist(name, description, view.playlistList);
                     view.libraryListModel.addElement(playlist.getPlaylistName());
                 }
 
-            } catch (NullPointerException np) {
+            } catch (NullPointerException ignored) {
 
             }
         }
@@ -163,6 +143,11 @@ public class MusicPlayerController {
 
     class RemovePlaylistListener implements ActionListener {
 
+        /**
+         * This method removes a playlist from the list of playlists.
+         * If the user has chosen the song library to be removed, the
+         * user will be informed that the song library cannot be removed.
+         */
         @Override
         public void actionPerformed(ActionEvent e) {
             int selectedPlaylist = view.libraryList.getSelectedIndex();
@@ -172,7 +157,9 @@ public class MusicPlayerController {
                 JOptionPane.showMessageDialog(view.mainFrame, "Can't delete library or favorites!");
             } else {
                 database.removePlaylist(playlistID);
-                System.out.println(view.playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
+                JOptionPane.showMessageDialog(null, view.playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
+                view.libraryList.setSelectedIndex(0);
+                view.libraryListModel.removeElementAt(playlistID - 1);
 
             }
         }
@@ -186,6 +173,9 @@ public class MusicPlayerController {
                 JOptionPane.showMessageDialog(view.mainFrame, "Select a playlist first!");
                 return;
             }
+
+
+
             String[] options = new String[]{"Name", "Description", "Cancel"};
             int choice = JOptionPane.showOptionDialog(null, "Edit playlist name or description",
                     "Edit", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
@@ -193,6 +183,10 @@ public class MusicPlayerController {
                 return;
             }
             if (choice == 0) {
+                if (view.currentPlaylist.getPlaylistID() == 1 || view.currentPlaylist.getPlaylistID() == 2) {
+                    JOptionPane.showMessageDialog(null, "You cannot change the name of the Song library or Favorites.");
+                    return;
+                }
                 editPlaylistName();
             }
             if (choice == 1) {
@@ -203,7 +197,7 @@ public class MusicPlayerController {
     }
 
     private void editPlaylistDescription() {
-        String desc = JOptionPane.showInputDialog(null, "Enter description");
+        String desc = JOptionPane.showInputDialog(null, "Enter description:");
         database.updatePlaylistDescription(desc);
         view.currentPlaylist.setPlaylistDescription(desc);
         view.playlistDescription.setText(desc);
@@ -211,18 +205,27 @@ public class MusicPlayerController {
     }
 
     private void editPlaylistName() {
-        System.out.println("edit playlist name");
+        String name = JOptionPane.showInputDialog(null, "Enter new playlist name:");
+        database.updatePlaylistName(name);
+        view.currentPlaylist.setPlaylistName(name);
+        view.libraryListModel.setElementAt(view.currentPlaylist.getPlaylistName(), view.currentPlaylist.getPlaylistID() - 1);
     }
 
+
     class RemoveSongListener implements ActionListener {
+
+        /**
+         * This method removes a song from the current playlist.
+         * The song that is selected in the table is removed.
+         * A song has to be selected before it can be removed.
+         */
         @Override
         public void actionPerformed(ActionEvent e) {
 
             int selectedRow = view.songTable.getSelectedRow();
-            //System.out.println(selectedRow);
 
             if (selectedRow == -1) {
-                System.out.println("no song selected");
+                JOptionPane.showMessageDialog(null, "No song selected.");
             } else {
 
                 database.removeSongFromPlaylist(view.currentPlaylist, view.playlistList, selectedRow + 1);
@@ -254,7 +257,6 @@ public class MusicPlayerController {
             if (view.songPlaying) {
                 view.mediaPlayer.stop();
             }
-
         }
     }
 
@@ -273,6 +275,11 @@ public class MusicPlayerController {
 
     class PrevSongListener implements ActionListener {
 
+        /**
+         * This method plays the previous song in the playlist.
+         * If the current song is the firest one in the playlist, the
+         * user will be informed and the current song keeps playing.
+         */
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -288,6 +295,13 @@ public class MusicPlayerController {
     }
 
     class ListEventListener implements ListSelectionListener {
+
+
+        /**
+         * This method changes the current playlist to a playlist
+         * chosen by the user. The table is cleared and the songs
+         * from the selected playlist will be added to the table
+         */
 
         @Override
         public void valueChanged(ListSelectionEvent e) {
@@ -314,20 +328,12 @@ public class MusicPlayerController {
         }
     }
 
+
+    /**
+     * This method updates the table, for example when
+     * a song is removed or added to the current playlist.
+     */
     private void updateSongTable() {
-
-        database.updateTable();
-        for (int i = view.songTableModel.getRowCount() - 1; i > -1; i--) {
-            view.songTableModel.removeRow(i);
-        }
-
-        for (Song song : view.currentPlaylist.getSongs()) {
-            view.songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});
-        }
-
-    }
-
-    private void updateLibraryList() {
 
         database.updateTable();
         for (int i = view.songTableModel.getRowCount() - 1; i > -1; i--) {
@@ -374,7 +380,6 @@ public class MusicPlayerController {
 
         try {
             if (song.getLyricsPath() != null) {
-                System.out.println();
                 InputStream inputStream = new FileInputStream(new File(song.getLyricsPath()));
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -413,17 +418,9 @@ public class MusicPlayerController {
         Thread background = new Thread(() -> {
 
             while (view.songPlaying) {
-                /*try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }*/
-
 
                 Duration songDuration = hit.getDuration();
                 Duration currentTime = view.mediaPlayer.getCurrentTime();
-                DecimalFormat df = new DecimalFormat("#0");
-
 
                 if (songDuration.equals(currentTime)) {
                     nextSong();
@@ -448,7 +445,6 @@ public class MusicPlayerController {
                     sec %= 60;
                 }
 
-                //System.out.println(songDuration.toSeconds());
                 view.seekBar.setString(min + ":" + sec + "/" + songTime);
                 view.seekBar.setValue(time);
                 //view.seekBar.setString(df.format(currentTime.toMinutes())  + "/" + df.format(songDuration.toMinutes()));
@@ -532,7 +528,6 @@ public class MusicPlayerController {
                     "Add song to playlist", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
             if (choice == -1) {
-                System.out.println("canceled");
                 return;
             }
 
@@ -547,10 +542,12 @@ public class MusicPlayerController {
         public void stateChanged(ChangeEvent e) {
 
             try {
-                double volume = view.volumeSlider.getValue() / 100.0;
-                view.mediaPlayer.setVolume(volume);
+                if (view.songPlaying){
+                    double volume = view.volumeSlider.getValue() / 100.0;
+                    view.mediaPlayer.setVolume(volume);
+                }
             } catch (NullPointerException ne) {
-
+                ne.printStackTrace();
             }
 
         }
@@ -566,41 +563,10 @@ public class MusicPlayerController {
 
             Duration songDuration = view.mediaPlayer.getTotalDuration();
             double newTime = songDuration.toSeconds() * (seekbarVal / 100.0);
-            System.out.println(newTime);
 
             Duration newDuration = new Duration(newTime * 1000);
 
             view.mediaPlayer.seek(newDuration);
-
-            //view.seekBar.setValue(seekbarVal);
-
-        }
-    }
-
-    private class FullscreenListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
-            if (!view.fullscreen) {
-
-
-                view.panel1.setVisible(false);
-                view.panel2.setVisible(false);
-                view.panel3.setVisible(false);
-
-                view.lyricsScrollPane.setPreferredSize(new Dimension(600, 600));
-                view.albumImage.setPreferredSize(new Dimension(500, 500));
-
-                view.fullscreen = true;
-            } else {
-                view.panel1.setVisible(true);
-                view.panel2.setVisible(true);
-                view.panel3.setVisible(true);
-                view.lyricsScrollPane.setPreferredSize(new Dimension(300, 500));
-                view.albumImage.setPreferredSize(new Dimension(300, 300));
-                view.fullscreen = false;
-            }
 
         }
     }
@@ -639,7 +605,6 @@ public class MusicPlayerController {
         public void actionPerformed(ActionEvent e) {
 
             Playlist searchPlaylist = new Playlist();
-
             ArrayList<Song> songList = new ArrayList<>();
             Playlist library = view.playlistList.get(0);
             String searchText = view.searchField.getText().toLowerCase();

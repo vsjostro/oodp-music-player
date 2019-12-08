@@ -49,10 +49,11 @@ public class MusicPlayerDatabase {
         Statement stmt;
         ResultSet rs;
         int playlistID = playlist.getPlaylistID();
-        
+
         try {
             Class.forName("org.sqlite.JDBC");
             c = DriverManager.getConnection("jdbc:sqlite::resource:" + getClass().getResource("/musicplayer.db"));
+
             //c.setAutoCommit(false);
 
             stmt = c.createStatement();
@@ -61,19 +62,22 @@ public class MusicPlayerDatabase {
 
             if (playlistID == 1) {
 
-                rs = stmt.executeQuery("SELECT LYRICS_PATH, ARTWORK_PATH FROM SONGS WHERE SONG_ID='"+selectedSong+"';");
+                rs = stmt.executeQuery("SELECT LYRICS_PATH, ARTWORK_PATH FROM SONGS WHERE SONG_ID='" + selectedSong + "';");
 
                 String lyricsPath = rs.getString("LYRICS_PATH");
                 String artPath = rs.getString("ARTWORK_PATH");
 
-                File lyrics = new File(lyricsPath);
-                File artwork = new File(artPath);
+                if (lyricsPath != null) {
 
-                System.out.println(lyricsPath);
-                System.out.println(artPath);
+                    File lyrics = new File(lyricsPath);
+                    File artwork = new File(artPath);
 
-                lyrics.delete();
-                artwork.delete();
+                    System.out.println(lyricsPath);
+                    System.out.println(artPath);
+
+                    lyrics.delete();
+                    artwork.delete();
+                }
 
                 stmt.execute("DELETE FROM SONGS WHERE SONG_ID='" + selectedSong + "';");
                 stmt.execute("DELETE FROM PLAYLIST_SONGS WHERE SONG_ID='" + selectedSong + "';");
@@ -187,9 +191,17 @@ public class MusicPlayerDatabase {
             c = DriverManager.getConnection("jdbc:sqlite::resource:" + getClass().getResource("/musicplayer.db"));
 
             stmt = c.createStatement();
+
+
             stmt.executeUpdate("UPDATE sqlite_sequence SET seq=(SELECT COUNT(*) FROM SONGS) WHERE name='SONGS'");
-            stmt.executeUpdate("INSERT INTO SONGS (SONG_NAME, FILE_PATH, ARTIST, LYRICS_PATH, ARTWORK_PATH) " +
-                    "VALUES ('" + title + "','" + songPath + "','" + artist + "','" + lyricsPath + "','"+artPath+"')");
+            if (lyricsPath == null) {
+                stmt.executeUpdate("INSERT INTO SONGS (SONG_NAME, FILE_PATH, ARTIST, ARTWORK_PATH) " +
+                        "VALUES ('" + title + "','" + songPath + "','" + artist + "','" + artPath + "')");
+            } else {
+                stmt.executeUpdate("INSERT INTO SONGS (SONG_NAME, FILE_PATH, ARTIST, LYRICS_PATH, ARTWORK_PATH) " +
+                        "VALUES ('" + title + "','" + songPath + "','" + artist + "','" + lyricsPath + "','" + artPath + "')");
+            }
+
 
             rs = stmt.executeQuery("SELECT COUNT(*) AS amount FROM SONGS");
             int songID = rs.getInt("amount");
@@ -259,12 +271,9 @@ public class MusicPlayerDatabase {
 
         try {
 
-            /*String path = MusicPlayerDatabase.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            System.out.println(URLDecoder.decode(path, "UTF-8"));
-            System.out.println(getClass().getResource("/musicplayer"));
-            */
             Class.forName("org.sqlite.JDBC");
             c = DriverManager.getConnection("jdbc:sqlite::resource:" + getClass().getResource("/musicplayer.db"));
+            System.out.println(getClass().getResource("/musicplayer.db"));
 
             c.setAutoCommit(false);
 
@@ -282,8 +291,6 @@ public class MusicPlayerDatabase {
 
                 playlist = new Playlist(id, name, desc, isLibrary);
                 playlists.add(playlist);
-
-                //System.out.println(playlist.getPlaylistName() + " added");
             }
 
             for (Playlist ps : playlists) {
@@ -348,7 +355,7 @@ public class MusicPlayerDatabase {
                 String artwork_path = rs.getString("ARTWORK_PATH");
                 String lyrics_path = rs.getString("LYRICS_PATH");
 
-                Song song = new Song(id, name, artist, file_path, artwork_path,lyrics_path);
+                Song song = new Song(id, name, artist, file_path, artwork_path, lyrics_path);
 
                 songList.add(song);
             }
@@ -373,6 +380,24 @@ public class MusicPlayerDatabase {
 
             stmt.executeUpdate("UPDATE PLAYLIST SET DESCRIPTION='" + description + "' WHERE PLAYLIST_ID='" + view.currentPlaylist.getPlaylistID() + "';");
 
+            stmt.close();
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void updatePlaylistName(String name) {
+        Connection c;
+        Statement stmt;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite::resource:" + getClass().getResource("/musicplayer.db"));
+            stmt = c.createStatement();
+
+            stmt.executeUpdate("UPDATE PLAYLIST SET NAME='" + name + "' WHERE PLAYLIST_ID='" + view.currentPlaylist.getPlaylistID() + "';");
             stmt.close();
             c.close();
 
