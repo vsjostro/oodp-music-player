@@ -54,7 +54,7 @@ cmake-build-*/
 out/
 MusicPlayer/out
 .idea
-# target/
+target/
 MusicPlayer/src/main/API/dist/*
 MusicPlayer/src/main/API/build/lyricsGeniusTest/
 
