@@ -4,6 +4,7 @@ import main.model.Playlist;
 import main.model.Song;
 import main.view.MusicPlayerView;
 
+import javax.swing.*;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -53,8 +54,6 @@ public class MusicPlayerDatabase {
         try {
             Class.forName("org.sqlite.JDBC");
             c = DriverManager.getConnection("jdbc:sqlite::resource:" + getClass().getResource("/musicplayer.db"));
-
-            //c.setAutoCommit(false);
 
             stmt = c.createStatement();
             stmt.execute("DELETE FROM PLAYLIST_SONGS WHERE PLAYLIST_ID='" + playlistID + "' AND SONG_IN_PLAYLIST_ID='" + selectedSong + "';");
@@ -179,6 +178,8 @@ public class MusicPlayerDatabase {
      * @param title    The song title, chosen as the file name
      * @param artist   The artist the user input, optional currently
      * @param songPath Path on disk of the file
+     * @param artPath The path of the song artwork
+     * @param lyricsPath The path of the lyrics text file
      */
 
     public void addSongToLibrary(String title, String artist, String songPath, String lyricsPath, String artPath) {
@@ -220,6 +221,15 @@ public class MusicPlayerDatabase {
         }
     }
 
+    /**
+     * This method adds a selected song to a selected playlist. The method
+     * checks if the database already has the song in the playlist, and will
+     * notify the user if it exists.
+     *
+     * @param song     The song that will be added to the selected playlist.
+     * @param playlist The playlist to where the song will be added.
+     */
+
     public void addSongToPlaylist(Song song, Playlist playlist) {
 
         Connection c;
@@ -239,7 +249,7 @@ public class MusicPlayerDatabase {
                 stmt.executeUpdate("INSERT INTO PLAYLIST_SONGS (PLAYLIST_ID, SONG_ID, SONG_IN_PLAYLIST_ID) VALUES " +
                         "('" + playlist.getPlaylistID() + "','" + song.getId() + "','" + songInPlaylist + "')");
             } else {
-                view.status.setText("Song already in playlist");
+                JOptionPane.showMessageDialog(null, "Song already in playlist");
             }
 
 
@@ -253,11 +263,11 @@ public class MusicPlayerDatabase {
     }
 
     /**
-     * This function is run when the application starts. It
+     * This method is run when the application starts. It
      * gets the playlists from the database and adds the songs
      * to each playlist, accoring to the information on the database.
-     * <p>
-     * playlists The playlists list is passed so that the playlists can be added to the list
+     *
+     * @param playlists The playlists list is passed so that the playlists can be added to the list
      */
 
     public void initPlaylists(ArrayList<Playlist> playlists) {
@@ -294,7 +304,7 @@ public class MusicPlayerDatabase {
             }
 
             for (Playlist ps : playlists) {
-                //add songs
+
                 stmt = c.createStatement();
                 rs = stmt.executeQuery("SELECT PLAYLIST_SONGS.SONG_IN_PLAYLIST_ID, SONGS.SONG_NAME, SONGS.ARTIST, SONGS.FILE_PATH, SONGS.ARTWORK_PATH, SONGS.LYRICS_PATH FROM SONGS " +
                         "INNER JOIN PLAYLIST_SONGS ON SONGS.SONG_ID=PLAYLIST_SONGS.SONG_ID WHERE PLAYLIST_ID=" + ps.getPlaylistID());
@@ -322,8 +332,6 @@ public class MusicPlayerDatabase {
             c.close();
         } catch (Exception e) {
             e.printStackTrace();
-            //System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-            //System.exit(0);
         }
     }
 
@@ -370,6 +378,13 @@ public class MusicPlayerDatabase {
         }
     }
 
+
+    /**
+     * This method updates the database with the new playlist description
+     *
+     * @param description The new description
+     */
+
     public void updatePlaylistDescription(String description) {
         Connection c;
         Statement stmt;
@@ -389,6 +404,12 @@ public class MusicPlayerDatabase {
 
     }
 
+    /**
+     * This method updates the database with the new playlist name
+     *
+     * @param name The new playlist name
+     */
+
     public void updatePlaylistName(String name) {
         Connection c;
         Statement stmt;
@@ -404,8 +425,6 @@ public class MusicPlayerDatabase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-
 
 }

@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * The controller for the application. Handles the events when buttons
- * are pressed.
+ * The controller for the application. Handles the events when buttons/changes happen.
  *
  * @author Viktor
  * @version 1.0
@@ -36,10 +35,8 @@ public class MusicPlayerController {
 
     private MusicPlayerView view;
     private MusicPlayerDatabase database;
-    //private MusicPlayerModel model;
 
     public MusicPlayerController(MusicPlayerView view, MusicPlayerDatabase database) {
-        //this.model = model;
         this.view = view;
         this.database = database;
 
@@ -64,178 +61,53 @@ public class MusicPlayerController {
 
     }
 
-    class AddSongToLibraryListener implements ActionListener {
-
-
-        public void actionPerformed(ActionEvent e) {
-            try {
-                JFileChooser chooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("Audio Files", "mp3", "wav");
-                chooser.setFileFilter(filter);
-                chooser.setAcceptAllFileFilterUsed(false);
-
-                int value = chooser.showOpenDialog(null);
-                String songPath = chooser.getSelectedFile().getPath();
-                String songName = JOptionPane.showInputDialog(null, "Enter song name");
-                String artist = JOptionPane.showInputDialog(null, "Enter artist name");
-
-
-                if (songName.isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "No title given!");
-                }
-                if (value == JFileChooser.APPROVE_OPTION) {
-
-                    String input = songName + " " + artist;
-                    String lyricsPath = null;
-                    String artPath;
-                    System.out.println(input.toLowerCase());
-
-                    APIDetails songAPIDetails = new APIDetails(input);
-
-                    if (songAPIDetails.getSongLyricsPath() != null) {
-                        lyricsPath = songAPIDetails.getSongLyricsPath();
-                        artPath = songAPIDetails.getAlbumArtPath();
-
-                    } else {
-                        artPath = getClass().getResource("/resources/images/defaultImage.png").getPath();
-                    }
-
-                    database.addSongToLibrary(songName, artist, songPath, lyricsPath, artPath);
-                    updateSongTable();
-
-                }
-            } catch (NullPointerException ignored) {
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-        }
-    }
-
-    class AddPlaylistListener implements ActionListener {
-
-        /**
-         * This method adds a playlist to the list of playlists.
-         * First it is added to the database and then to the list of playlists.
-         */
+    private class AddSongToLibraryListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-
-
-            try {
-                String name = JOptionPane.showInputDialog(null, "Enter playlist name");
-
-                if (name.equals("")) {
-                    JOptionPane.showMessageDialog(null, "Playlist name cannot be empty");
-                } else {
-                    String description = JOptionPane.showInputDialog(null, "Enter description (optional)");
-                    Playlist playlist = database.addPlaylist(name, description, view.playlistList);
-                    view.libraryListModel.addElement(playlist.getPlaylistName());
-                }
-
-            } catch (NullPointerException ignored) {
-
-            }
+            addSongToLibrary();
         }
     }
 
-    class RemovePlaylistListener implements ActionListener {
 
-        /**
-         * This method removes a playlist from the list of playlists.
-         * If the user has chosen the song library to be removed, the
-         * user will be informed that the song library cannot be removed.
-         */
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int selectedPlaylist = view.libraryList.getSelectedIndex();
-            int playlistID = view.playlistList.get(selectedPlaylist).getPlaylistID();
-
-            if (selectedPlaylist == 0 || selectedPlaylist == 1) {
-                JOptionPane.showMessageDialog(view.mainFrame, "Can't delete library or favorites!");
-            } else {
-                database.removePlaylist(playlistID);
-                JOptionPane.showMessageDialog(null, view.playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
-                view.libraryList.setSelectedIndex(0);
-                view.libraryListModel.removeElementAt(playlistID - 1);
-
-            }
-        }
-    }
-
-    class EditPlaylistListener implements ActionListener {
+    private class AddPlaylistListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (view.libraryList.isSelectionEmpty()) {
-                JOptionPane.showMessageDialog(view.mainFrame, "Select a playlist first!");
-                return;
-            }
-
-
-
-            String[] options = new String[]{"Name", "Description", "Cancel"};
-            int choice = JOptionPane.showOptionDialog(null, "Edit playlist name or description",
-                    "Edit", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-            if (choice == -1 || choice == 2) {
-                return;
-            }
-            if (choice == 0) {
-                if (view.currentPlaylist.getPlaylistID() == 1 || view.currentPlaylist.getPlaylistID() == 2) {
-                    JOptionPane.showMessageDialog(null, "You cannot change the name of the Song library or Favorites.");
-                    return;
-                }
-                editPlaylistName();
-            }
-            if (choice == 1) {
-                editPlaylistDescription();
-            }
-
+            addPlaylist();
         }
     }
 
-    private void editPlaylistDescription() {
-        String desc = JOptionPane.showInputDialog(null, "Enter description:");
-        database.updatePlaylistDescription(desc);
-        view.currentPlaylist.setPlaylistDescription(desc);
-        view.playlistDescription.setText(desc);
-
-    }
-
-    private void editPlaylistName() {
-        String name = JOptionPane.showInputDialog(null, "Enter new playlist name:");
-        database.updatePlaylistName(name);
-        view.currentPlaylist.setPlaylistName(name);
-        view.libraryListModel.setElementAt(view.currentPlaylist.getPlaylistName(), view.currentPlaylist.getPlaylistID() - 1);
-    }
+    private class RemovePlaylistListener implements ActionListener {
 
 
-    class RemoveSongListener implements ActionListener {
-
-        /**
-         * This method removes a song from the current playlist.
-         * The song that is selected in the table is removed.
-         * A song has to be selected before it can be removed.
-         */
         @Override
         public void actionPerformed(ActionEvent e) {
-
-            int selectedRow = view.songTable.getSelectedRow();
-
-            if (selectedRow == -1) {
-                JOptionPane.showMessageDialog(null, "No song selected.");
-            } else {
-
-                database.removeSongFromPlaylist(view.currentPlaylist, view.playlistList, selectedRow + 1);
-                updateSongTable();
-
-            }
+            removePlaylist();
         }
     }
 
-    class PlaySongListener implements ActionListener {
+
+    private class EditPlaylistListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            editPlaylist();
+        }
+    }
+
+
+    private class RemoveSongListener implements ActionListener {
+
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            removeSong();
+        }
+    }
+
+
+    private class PlaySongListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -250,7 +122,7 @@ public class MusicPlayerController {
         }
     }
 
-    class StopSongListener implements ActionListener {
+    private class StopSongListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -260,12 +132,8 @@ public class MusicPlayerController {
         }
     }
 
-    class NextSongListener implements ActionListener {
-        /**
-         * This method plays the next song in the playlist.
-         * If the current song is the last one in the playlist, the
-         * user will be informed and the current song keeps playing.
-         */
+    private class NextSongListener implements ActionListener {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             nextSong();
@@ -273,28 +141,15 @@ public class MusicPlayerController {
     }
 
 
-    class PrevSongListener implements ActionListener {
+    private class PrevSongListener implements ActionListener {
 
-        /**
-         * This method plays the previous song in the playlist.
-         * If the current song is the firest one in the playlist, the
-         * user will be informed and the current song keeps playing.
-         */
         @Override
         public void actionPerformed(ActionEvent e) {
-            try {
-                if (view.songPlaying) {
-                    Song prevSong = view.currentPlaylist.getSongs().get(view.currentSong.getId() - 2);
-                    playSong(prevSong);
-                    view.songTable.setRowSelectionInterval(prevSong.getId() - 1, prevSong.getId() - 1);
-                }
-            } catch (IndexOutOfBoundsException ie) {
-                view.status.setText("First song in playlist");
-            }
+            prevSong();
         }
     }
 
-    class ListEventListener implements ListSelectionListener {
+    private class ListEventListener implements ListSelectionListener {
 
 
         /**
@@ -317,17 +172,265 @@ public class MusicPlayerController {
 
             updateSongTable();
 
-            /*for (int i = view.songTableModel.getRowCount() - 1; i > -1; i--) {
-                view.songTableModel.removeRow(i);
-            }
-            if (view.currentPlaylist.getSongs() != null) {
-                for (Song song : view.currentPlaylist.getSongs()) {
-                    view.songTableModel.addRow(new Object[]{song.getId(), song.getName(), song.getArtist()});
-                }
-            }*/
         }
     }
 
+    private class SeekbarListener extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+            int mouseX = e.getX();
+
+            int seekbarVal = (int) Math.round(((double) mouseX / (double) view.seekBar.getWidth() * view.seekBar.getMaximum()));
+
+            Duration songDuration = view.mediaPlayer.getTotalDuration();
+            double newTime = songDuration.toSeconds() * (seekbarVal / 100.0);
+
+            Duration newDuration = new Duration(newTime * 1000);
+
+            view.mediaPlayer.seek(newDuration);
+        }
+    }
+
+
+    private class ShuffleListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.shuffleToggled = !view.shuffleToggled;
+        }
+    }
+
+    private class LoopListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            view.loopToggled = !view.loopToggled;
+        }
+    }
+
+    private class FavoriteListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (view.songTable.getSelectedRow() == -1) {
+                JOptionPane.showMessageDialog(view.mainFrame, "Select a song first!");
+
+            } else {
+                view.status.setText("Song added to favorites");
+                database.addSongToPlaylist(view.currentPlaylist.getSongs().get(view.songTable.getSelectedRow()), view.playlistList.get(1));
+            }
+
+        }
+    }
+
+    private class SearchListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            search();
+        }
+    }
+
+    private class DoubleClickListener extends MouseAdapter {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() == 2) {
+                int selectedRow = view.songTable.getSelectedRow();
+                Song song = view.currentPlaylist.getSongs().get(selectedRow);
+                playSong(song);
+            }
+        }
+    }
+
+    private class AddSongToPlaylistListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            addSongToPlaylist();
+        }
+    }
+
+    private class VolumeChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            volumeChange();
+        }
+    }
+
+    /**
+     * This method adds a song to the song library. The user is first
+     * prompted to select to song file, mp3 and wav files are accepted.
+     * After selecting a song file, the user will enter the songs name and artist.
+     * The API will then search for the song and artist and start downloading the
+     * lyrics and album art. If the song isn't found or there is no internet connection,
+     * the album art will be a default image and the lyrics will be empty.
+     *
+     */
+
+    private void addSongToLibrary() {
+
+        try {
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Audio Files", "mp3", "wav");
+            chooser.setFileFilter(filter);
+            chooser.setAcceptAllFileFilterUsed(false);
+
+            int value = chooser.showOpenDialog(null);
+            String songPath = chooser.getSelectedFile().getPath();
+            String songName = JOptionPane.showInputDialog(null, "Enter song name");
+            String artist = JOptionPane.showInputDialog(null, "Enter artist name");
+
+
+            if (songName.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No title given!");
+            }
+            if (value == JFileChooser.APPROVE_OPTION) {
+
+                String input = songName + " " + artist;
+                String lyricsPath = null;
+                String artPath;
+                System.out.println(input.toLowerCase());
+
+                APIDetails songAPIDetails = new APIDetails(input);
+
+                if (songAPIDetails.getSongLyricsPath() != null) {
+                    lyricsPath = songAPIDetails.getSongLyricsPath();
+                    artPath = songAPIDetails.getAlbumArtPath();
+
+                } else {
+                    artPath = getClass().getResource("/resources/images/defaultImage.png").getPath();
+                }
+
+                database.addSongToLibrary(songName, artist, songPath, lyricsPath, artPath);
+                updateSongTable();
+
+            }
+        } catch (NullPointerException ignored) {
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * This method adds a playlist to the list of playlists.
+     * First it is added to the database and then to the list of playlists.
+     */
+    private void addPlaylist() {
+        try {
+            String name = JOptionPane.showInputDialog(null, "Enter playlist name");
+
+            if (name.equals("")) {
+                JOptionPane.showMessageDialog(null, "Playlist name cannot be empty");
+            } else {
+                String description = JOptionPane.showInputDialog(null, "Enter description (optional)");
+                Playlist playlist = database.addPlaylist(name, description, view.playlistList);
+                view.libraryListModel.addElement(playlist.getPlaylistName());
+            }
+
+        } catch (NullPointerException ignored) {
+
+        }
+    }
+
+    /**
+     * This method removes a playlist from the list of playlists.
+     * If the user has chosen the song library to be removed, the
+     * user will be informed that the song library cannot be removed.
+     */
+
+    private void removePlaylist() {
+        int selectedPlaylist = view.libraryList.getSelectedIndex();
+        int playlistID = view.playlistList.get(selectedPlaylist).getPlaylistID();
+
+        if (selectedPlaylist == 0 || selectedPlaylist == 1) {
+            JOptionPane.showMessageDialog(view.mainFrame, "Can't delete library or favorites!");
+        } else {
+            database.removePlaylist(playlistID);
+            JOptionPane.showMessageDialog(null, view.playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
+            view.libraryList.setSelectedIndex(0);
+            view.libraryListModel.removeElementAt(playlistID - 1);
+
+        }
+    }
+
+    /**
+     * This method allows the user to change the name and description of
+     * existing playlists. After a playlist is selected, the user presses
+     * the edit option from the menu and the user is prompted to choose
+     * to edit the name or description of the playlist.
+     */
+
+    private void editPlaylist() {
+        if (view.libraryList.isSelectionEmpty()) {
+            JOptionPane.showMessageDialog(view.mainFrame, "Select a playlist first!");
+            return;
+        }
+
+        String[] options = new String[]{"Name", "Description", "Cancel"};
+        int choice = JOptionPane.showOptionDialog(null, "Edit playlist name or description",
+                "Edit", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+        System.out.println(choice);
+        if (choice == -1 || choice == 2) {
+            return;
+        }
+        if (choice == 0) {
+            if (view.currentPlaylist.getPlaylistID() == 1 || view.currentPlaylist.getPlaylistID() == 2) {
+                JOptionPane.showMessageDialog(null, "You cannot change the name of the Song library or Favorites.");
+                return;
+            }
+            editPlaylistName();
+        }
+        if (choice == 1) {
+            editPlaylistDescription();
+        }
+
+    }
+
+
+    /**
+     * This method is called if the user chooses to edit the description of a playlist.
+     */
+    private void editPlaylistDescription() {
+        String desc = JOptionPane.showInputDialog(null, "Enter description:");
+        if (desc == null) {
+            return;
+        }
+        database.updatePlaylistDescription(desc);
+        view.currentPlaylist.setPlaylistDescription(desc);
+        view.playlistDescription.setText(desc);
+
+    }
+
+    /**
+     * This method is called if the user chooses to edit the name of a playlist.
+     */
+    private void editPlaylistName() {
+        String name = JOptionPane.showInputDialog(null, "Enter new playlist name:");
+        if (name == null) {
+            return;
+        }
+        database.updatePlaylistName(name);
+        view.currentPlaylist.setPlaylistName(name);
+        view.libraryListModel.setElementAt(view.currentPlaylist.getPlaylistName(), view.currentPlaylist.getPlaylistID() - 1);
+    }
+
+    /**
+     * This method removes a song from the current playlist.
+     * The song that is selected in the table is removed.
+     * A song has to be selected before it can be removed.
+     */
+    private void removeSong() {
+        int selectedRow = view.songTable.getSelectedRow();
+
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "No song selected.");
+        } else {
+
+            database.removeSongFromPlaylist(view.currentPlaylist, view.playlistList, selectedRow + 1);
+            updateSongTable();
+
+        }
+    }
 
     /**
      * This method updates the table, for example when
@@ -463,7 +566,11 @@ public class MusicPlayerController {
         view.songPlaying = false;
     }
 
-
+    /**
+     * This method plays the next song in the playlist.
+     * If the current song is the last one in the playlist, the
+     * user will be informed and the current song keeps playing.
+     */
     private void nextSong() {
         try {
             if (view.songPlaying) {
@@ -494,126 +601,94 @@ public class MusicPlayerController {
         }
     }
 
-    private class DoubleClickListener extends MouseAdapter {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 2) {
-                int selectedRow = view.songTable.getSelectedRow();
-                Song song = view.currentPlaylist.getSongs().get(selectedRow);
-                playSong(song);
+    /**
+     * This method plays the previous song in the playlist.
+     * If the current song is the firest one in the playlist, the
+     * user will be informed and the current song keeps playing.
+     */
+
+    private void prevSong() {
+        try {
+            if (view.songPlaying) {
+                Song prevSong = view.currentPlaylist.getSongs().get(view.currentSong.getId() - 2);
+                playSong(prevSong);
+                view.songTable.setRowSelectionInterval(prevSong.getId() - 1, prevSong.getId() - 1);
             }
-        }
-
-    }
-
-    private class AddSongToPlaylistListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int selectedRow = view.songTable.getSelectedRow();
-            if (selectedRow == -1) {
-                JOptionPane.showMessageDialog(view.mainFrame, "Select a song to be added!");
-                return;
-            }
-            Song song = view.currentPlaylist.getSongs().get(selectedRow);
-            ArrayList<String> playlists = new ArrayList<>();
-
-            for (Playlist playlist : view.playlistList) {
-                if (playlist == view.playlistList.get(0)) continue;
-
-                playlists.add(playlist.getPlaylistName());
-            }
-            Object[] options = playlists.toArray();
-            int choice = JOptionPane.showOptionDialog(null, "Add " + song.getName() + " to which playlist?",
-                    "Add song to playlist", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-
-            if (choice == -1) {
-                return;
-            }
-
-            database.addSongToPlaylist(song, view.playlistList.get(choice + 1));
-
+        } catch (IndexOutOfBoundsException | IllegalArgumentException ie) {
+            view.status.setText("First song in playlist");
         }
     }
 
-    private class VolumeChangeListener implements ChangeListener {
+    /**
+     * This method adds a song to a specific playlist. After selecting an existing
+     * song from the table, the user can add that song to a playlist.
+     */
 
-        @Override
-        public void stateChanged(ChangeEvent e) {
+    private void addSongToPlaylist() {
+        int selectedRow = view.songTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(view.mainFrame, "Select a song to be added!");
+            return;
+        }
+        Song song = view.currentPlaylist.getSongs().get(selectedRow);
+        ArrayList<String> playlists = new ArrayList<>();
 
-            try {
-                if (view.songPlaying){
-                    double volume = view.volumeSlider.getValue() / 100.0;
-                    view.mediaPlayer.setVolume(volume);
-                }
-            } catch (NullPointerException ne) {
-                ne.printStackTrace();
+        for (Playlist playlist : view.playlistList) {
+            if (playlist == view.playlistList.get(0)) continue;
+
+            playlists.add(playlist.getPlaylistName());
+        }
+        Object[] options = playlists.toArray();
+        int choice = JOptionPane.showOptionDialog(null, "Add " + song.getName() + " to which playlist?",
+                "Add song to playlist", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+
+        if (choice == -1) {
+            return;
+        }
+
+        database.addSongToPlaylist(song, view.playlistList.get(choice + 1));
+    }
+
+
+    /**
+     * This method is called every time a change happens to the
+     * volume slider. A song has to be playing for this method
+     * to apply the volume change.
+     */
+
+    private void volumeChange() {
+        try {
+            if (view.songPlaying) {
+                double volume = view.volumeSlider.getValue() / 100.0;
+                view.mediaPlayer.setVolume(volume);
             }
-
+        } catch (NullPointerException ne) {
+            ne.printStackTrace();
         }
     }
 
-    private class SeekbarListener extends MouseAdapter {
-        @Override
-        public void mouseClicked(MouseEvent e) {
+    /**
+     * This method searches for songs or artists that match the
+     * string in the search field. If no results are found, a
+     * prompt will appear to notify the user.
+     */
 
-            int mouseX = e.getX();
+    private void search() {
+        Playlist searchPlaylist = new Playlist();
+        ArrayList<Song> songList = new ArrayList<>();
+        Playlist library = view.playlistList.get(0);
+        String searchText = view.searchField.getText().toLowerCase();
 
-            int seekbarVal = (int) Math.round(((double) mouseX / (double) view.seekBar.getWidth() * view.seekBar.getMaximum()));
-
-            Duration songDuration = view.mediaPlayer.getTotalDuration();
-            double newTime = songDuration.toSeconds() * (seekbarVal / 100.0);
-
-            Duration newDuration = new Duration(newTime * 1000);
-
-            view.mediaPlayer.seek(newDuration);
-
-        }
-    }
-
-
-    private class ShuffleListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            view.shuffleToggled = !view.shuffleToggled;
-        }
-    }
-
-    private class LoopListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            view.loopToggled = !view.loopToggled;
-        }
-    }
-
-    private class FavoriteListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (view.songTable.getSelectedRow() == -1) {
-                JOptionPane.showMessageDialog(view.mainFrame, "Select a song first!");
-
-            } else {
-                view.status.setText("Song added to favorites");
-                database.addSongToPlaylist(view.currentPlaylist.getSongs().get(view.songTable.getSelectedRow()), view.playlistList.get(1));
+        for (Song song : library.getSongs()) {
+            if (song.getName().toLowerCase().contains(searchText) || song.getArtist().toLowerCase().contains(searchText)) {
+                songList.add(song);
             }
-
         }
-    }
 
-    private class SearchListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
+        if (songList.size() == 0) {
+            JOptionPane.showMessageDialog(null, "No song or artist found with search: " + view.searchField.getText());
 
-            Playlist searchPlaylist = new Playlist();
-            ArrayList<Song> songList = new ArrayList<>();
-            Playlist library = view.playlistList.get(0);
-            String searchText = view.searchField.getText().toLowerCase();
-
-            for (Song song : library.getSongs()) {
-                if (song.getName().toLowerCase().contains(searchText) || song.getArtist().toLowerCase().contains(searchText)) {
-                    songList.add(song);
-                }
-            }
+        } else {
 
             searchPlaylist.setSongs(songList);
             view.currentPlaylist = searchPlaylist;
@@ -626,8 +701,7 @@ public class MusicPlayerController {
             for (Song foundSong : songList) {
                 view.songTableModel.addRow(new Object[]{foundSong.getId(), foundSong.getName(), foundSong.getArtist()});
             }
-
-
         }
+
     }
 }

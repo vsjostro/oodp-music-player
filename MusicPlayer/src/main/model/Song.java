@@ -1,7 +1,5 @@
 package main.model;
 
-import main.API.APIDetails;
-
 /**
  * This is the class for the song. A song contains the path of
  * that songs path on the users machine, and other information
@@ -19,18 +17,7 @@ public class Song {
     private String songPath;
     private String imagePath;
     private String lyricsPath;
-    private APIDetails apiDetails;
 
-
-    public Song(String userInput) throws Exception {
-        this.apiDetails = new APIDetails(userInput);
-    }
-
-    public Song(String name, String artist, String songPath) {
-        this.name = name;
-        this.artist = artist;
-        this.songPath = songPath;
-    }
 
     /**
      * The constructor for Song.
@@ -59,14 +46,6 @@ public class Song {
         return name;
     }
 
-    /**
-     * Setter for the song name.
-     *
-     * @param name The new name to be set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
 
     /**
      * Getter for the song id.
@@ -86,14 +65,6 @@ public class Song {
         return artist;
     }
 
-    /**
-     * Setter for the song artist.
-     *
-     * @param artist The artist name to be set
-     */
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
 
     /**
      * Getter for the song path.
@@ -113,6 +84,12 @@ public class Song {
         return imagePath;
     }
 
+
+    /**
+     * Getter for the lyrics path of the song.
+     *
+     * @return lyricsPath
+     */
     public String getLyricsPath() {
         return lyricsPath;
     }

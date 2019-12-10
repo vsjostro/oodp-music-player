@@ -58,8 +58,8 @@ public class MusicPlayerView extends JFrame {
     public DefaultListModel libraryListModel = new DefaultListModel();
     public JList libraryList = new JList(libraryListModel);
 
-    private JButton addButton = new JButton("Add song");
-    private JButton removeButton = new JButton("Remove song");
+    //private JButton addButton = new JButton("Add song");
+    //private JButton removeButton = new JButton("Remove song");
     private JButton playButton = new JButton("Play");
     private JButton nextButton = new JButton("Next");
     private JButton prevButton = new JButton("Prev");
@@ -82,7 +82,7 @@ public class MusicPlayerView extends JFrame {
     private JMenuItem editPlaylistItem;
 
 
-    private ArrayList<Song> songList = new ArrayList<>();
+    //private ArrayList<Song> songList = new ArrayList<>();
     public ArrayList<Playlist> playlistList = new ArrayList<>();
     public MediaPlayer mediaPlayer;
     public Boolean songPlaying = false;
@@ -101,11 +101,6 @@ public class MusicPlayerView extends JFrame {
 
     public MusicPlayerView() {
 
-
-        //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        //UIManager.put("Button.mouseHoverEnable", false);
-        //JDialog.setDefaultLookAndFeelDecorated(true);
-        //JFrame.setDefaultLookAndFeelDecorated(false);
 
         //Menubar init
         JMenuBar menuBar = new JMenuBar();
@@ -175,27 +170,6 @@ public class MusicPlayerView extends JFrame {
         albumImage.setVerticalAlignment(JLabel.CENTER);
 
 
-        //setting the lyrics
-        /*try {
-            InputStream inputStream = new FileInputStream("MusicPlayer/src/resources/lyrics/tameimpala.txt");
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line = bufferedReader.readLine();
-            StringBuilder stringBuilder = new StringBuilder();
-
-            while (line != null) {
-                stringBuilder.append(line).append("\n");
-                line = bufferedReader.readLine();
-            }
-
-            String lyrics = stringBuilder.toString();
-            lyricsTextArea.setText(lyrics);
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
         songTable.setBounds(30, 40, 200, 300);
         songTable.setDefaultEditor(Object.class, null);
         songTable.setFont(new Font("", Font.PLAIN, 24));
@@ -230,20 +204,8 @@ public class MusicPlayerView extends JFrame {
 
             }
         });
-        /*searchField.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (searchField.getText().equals("Search")){
-                    searchField.setText("");
-                }
-            }
-        });*/
-
 
         setBorderlayout();
-        //setMigLayout();
-
 
         //extra customization
         songTable.setGridColor(Color.black);
@@ -251,7 +213,7 @@ public class MusicPlayerView extends JFrame {
         mainFrame.setIconImage(image.getImage());
         mainFrame.setJMenuBar(menuBar);
 
-        //frame.setSize(1700, 900);
+
         mainFrame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
         mainFrame.setExtendedState(MAXIMIZED_BOTH);
         mainFrame.setLocationRelativeTo(null);
@@ -274,13 +236,9 @@ public class MusicPlayerView extends JFrame {
         panel4.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         panel5.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        //panel1.setPreferredSize(new Dimension(0,50  ));
-
-        //panel1.add(addButton, BorderLayout.WEST);
         panel1.add(status, BorderLayout.WEST);
         panel1.add(currentPlaylistLabel, BorderLayout.CENTER);
         panel1.add(searchField, BorderLayout.EAST);
-        //panel1.add(removeButton, BorderLayout.EAST);
         panel2.add(libraryList);
         panel2.add(playlistDescription, BorderLayout.SOUTH);
         panel3.add(songTableScrollPane, BorderLayout.CENTER);
@@ -299,7 +257,6 @@ public class MusicPlayerView extends JFrame {
         panel5.add(lyricsScrollPane, BorderLayout.NORTH);
         panel5.add(albumImage, BorderLayout.SOUTH);
 
-
         mainFrame = new JFrame("Music Player");
 
         mainFrame.add(panel1, BorderLayout.NORTH);
@@ -312,7 +269,6 @@ public class MusicPlayerView extends JFrame {
 
 
     public void addSongToLibraryListener(ActionListener actionListener) {
-        addButton.addActionListener(actionListener);
         addSongToLibraryItem.addActionListener(actionListener);
     }
 
@@ -329,7 +285,6 @@ public class MusicPlayerView extends JFrame {
     }
 
     public void addRemoveSongListener(ActionListener actionListener) {
-        removeButton.addActionListener(actionListener);
         removeSongItem.addActionListener(actionListener);
     }
 
