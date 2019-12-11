@@ -180,16 +180,20 @@ public class MusicPlayerController {
         @Override
         public void mouseClicked(MouseEvent e) {
 
-            int mouseX = e.getX();
+            if (view.songPlaying) {
+                int mouseX = e.getX();
 
-            int seekbarVal = (int) Math.round(((double) mouseX / (double) view.seekBar.getWidth() * view.seekBar.getMaximum()));
+                int seekbarVal = (int) Math.round(((double) mouseX / (double) view.seekBar.getWidth() * view.seekBar.getMaximum()));
 
-            Duration songDuration = view.mediaPlayer.getTotalDuration();
-            double newTime = songDuration.toSeconds() * (seekbarVal / 100.0);
+                Duration songDuration = view.mediaPlayer.getTotalDuration();
+                double newTime = songDuration.toSeconds() * (seekbarVal / 100.0);
 
-            Duration newDuration = new Duration(newTime * 1000);
+                Duration newDuration = new Duration(newTime * 1000);
 
-            view.mediaPlayer.seek(newDuration);
+                view.mediaPlayer.seek(newDuration);
+
+            }
+
         }
     }
 
@@ -263,7 +267,6 @@ public class MusicPlayerController {
      * The API will then search for the song and artist and start downloading the
      * lyrics and album art. If the song isn't found or there is no internet connection,
      * the album art will be a default image and the lyrics will be empty.
-     *
      */
 
     private void addSongToLibrary() {
@@ -340,16 +343,22 @@ public class MusicPlayerController {
 
     private void removePlaylist() {
         int selectedPlaylist = view.libraryList.getSelectedIndex();
-        int playlistID = view.playlistList.get(selectedPlaylist).getPlaylistID();
+        try {
+            int playlistID = view.playlistList.get(selectedPlaylist).getPlaylistID();
 
-        if (selectedPlaylist == 0 || selectedPlaylist == 1) {
-            JOptionPane.showMessageDialog(view.mainFrame, "Can't delete library or favorites!");
-        } else {
-            database.removePlaylist(playlistID);
-            JOptionPane.showMessageDialog(null, view.playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
-            view.libraryList.setSelectedIndex(0);
-            view.libraryListModel.removeElementAt(playlistID - 1);
 
+            if (selectedPlaylist == 0 || selectedPlaylist == 1) {
+                JOptionPane.showMessageDialog(view.mainFrame, "Can't delete library or favorites!");
+            } else {
+                database.removePlaylist(playlistID);
+                JOptionPane.showMessageDialog(null, view.playlistList.get(selectedPlaylist).getPlaylistName() + " deleted");
+                view.libraryList.setSelectedIndex(0);
+                view.libraryListModel.removeElementAt(playlistID - 1);
+
+            }
+
+        } catch (ArrayIndexOutOfBoundsException ae) {
+            JOptionPane.showMessageDialog(null, "Select a playlist first!");
         }
     }
 
@@ -550,8 +559,6 @@ public class MusicPlayerController {
 
                 view.seekBar.setString(min + ":" + sec + "/" + songTime);
                 view.seekBar.setValue(time);
-                //view.seekBar.setString(df.format(currentTime.toMinutes())  + "/" + df.format(songDuration.toMinutes()));
-                //view.status.setText(String.valueOf((int) currentTime.toSeconds()));
 
             }
         });
@@ -575,7 +582,6 @@ public class MusicPlayerController {
         try {
             if (view.songPlaying) {
                 Song nextSong;
-
 
                 if (view.shuffleToggled) {
 

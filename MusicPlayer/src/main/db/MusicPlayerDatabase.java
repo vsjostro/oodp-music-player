@@ -71,8 +71,8 @@ public class MusicPlayerDatabase {
                     File lyrics = new File(lyricsPath);
                     File artwork = new File(artPath);
 
-                    System.out.println(lyricsPath);
-                    System.out.println(artPath);
+                    System.out.println(lyricsPath + " removed");
+                    System.out.println(artPath + " removed");
 
                     lyrics.delete();
                     artwork.delete();

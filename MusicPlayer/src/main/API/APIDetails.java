@@ -321,22 +321,17 @@ public class APIDetails {
         byte[] response = out.toByteArray();
 
         final ClassLoader loader = APIDetails.class.getClassLoader();
-        //String path = loader.getResource("resources/images").getPath();
 
         String path = APIDetails.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         String decodedPath = URLDecoder.decode(path, "UTF-8");
+
         if (decodedPath.contains("MusicPlayer.jar")) {
             System.out.println(decodedPath);
             decodedPath = decodedPath.replace("MusicPlayer.jar", "classes/resources/images");
-
-            System.out.println("jar");
         } else {
             System.out.println(decodedPath);
             decodedPath = loader.getResource("resources/images").getPath();
-            System.out.println("normal");
         }
-
-        System.out.println("test");
 
         FileOutputStream fos = new FileOutputStream(decodedPath + "/" + fileName);
         fos.write(response);
@@ -377,10 +372,8 @@ public class APIDetails {
 
         if (decodedPath.contains("MusicPlayer.jar")) {
             decodedPath = decodedPath.replace("MusicPlayer.jar", "classes/resources/lyrics");
-            System.out.println("jar");
         } else {
             decodedPath = loader.getResource("resources/lyrics").getPath();
-            System.out.println("normal");
         }
 
         PrintWriter writer = new PrintWriter(decodedPath + "/" + fileName, "UTF-8");
